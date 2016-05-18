@@ -1,0 +1,39 @@
+# Site settings
+title: Meng Fanze
+description: "这里，仅仅是一台打字机。"
+url: 'http://iFanze.cn'
+baseurl: '/'
+# google_analytics: 'UA-XXXXXX-X'
+# disqus_shortname: 'your-disqus-name'
+
+author:
+  name: '孟凡泽'
+  email: iFanze@outlook.com
+  twitter_username: iFanze
+  facebook_username: iFanze
+  github_username:  iFanze
+  linkedin_username:  iFanze
+
+defaults:
+  -
+    scope:
+      path: ''
+      type: 'posts'
+    values:
+        layout: 'post'
+
+# Build settings
+destination: _site
+paginate: 10
+permalink: /:year/:title/
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  # use Github Flavored Markdown
+  input: GFM
+  # do not replace newlines by <br>s
+  hard_wrap: false
+
+gems: ['jekyll-paginate']
+exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'screenshot.png']
