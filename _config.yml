@@ -1,6 +1,6 @@
 # Site settings
 title: Meng Fanze
-description: "这里，仅仅是一台打字机。"
+description: "求知，思考，高效生活"
 url: 'http://iFanze.cn'
 baseurl: '/'
 # google_analytics: 'UA-XXXXXX-X'
@@ -9,10 +9,10 @@ baseurl: '/'
 author:
   name: '孟凡泽'
   email: iFanze@outlook.com
-  twitter_username: iFanze
-  facebook_username: iFanze
+  qq: '919446762'
+  weibo_username: 'ichen0201'
   github_username:  iFanze
-  linkedin_username:  iFanze
+  zhihu_username:  iFanze
 
 defaults:
   -

@@ -27,32 +27,32 @@
           <nav class="cover-navigation navigation--social">
             <ul class="navigation">
           
-            {% if site.author.twitter_username %}
-              <!-- Twitter -->
+            {% if site.author.qq %}
+              <!-- QQ -->
               <li class="navigation__item">
-                <a href="http://twitter.com/{{ site.author.twitter_username }}" title="@{{ site.author.twitter_username }} on Twitter" target="_blank">
-                  <i class="icon icon-social-twitter"></i>
-                  <span class="label">Twitter</span>
+                <a href="http://fanze.qzone.qq.com" title="QQ空间" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
                 </a>
               </li>
             {% endif %}
 
-            {% if site.author.facebook_username %}
-              <!-- Facebook -->
+            {% if site.author.weibo_username %}
+              <!-- 微博 -->
               <li class="navigation__item">
-                <a href="http://fb.me/{{ site.author.facebook_username }}" title="{{ site.author.facebook_username }} on Facebook" target="_blank">
-                  <i class="icon icon-social-facebook"></i>
-                  <span class="label">Facebook</span>
+                <a href="http://weibo.com/{{ site.author.weibo_username }}" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
                 </a>
               </li>
             {% endif %}
 
-            {% if site.author.linkedin_username %}
-              <!-- LinkedIn -->
+            {% if site.author.zhihu_username %}
+              <!-- 知乎 -->
               <li class="navigation__item">
-                <a href="https://www.linkedin.com/in/{{ site.author.linkedin_username }}" title="{{ site.author.linkedin_username }} on LinkedIn" target="_blank">
-                  <i class="icon icon-social-linkedin"></i>
-                  <span class="label">LinkedIn</span>
+                <a href="https://www.zhihu.com/people/{{ site.author.zhihu_username }}" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
                 </a>
               </li>
             {% endif %}
@@ -61,8 +61,8 @@
               <!-- GitHub -->
               <li class="navigation__item">
                 <a href="https://www.github.com/{{ site.author.github_username }}" title="{{ site.author.github_username }} on GitHub" target="_blank">
-                  <i class="icon icon-social-github"></i>
-                  <span class="label">GitHub</span>
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
                 </a>
               </li>
             {% endif %}
@@ -71,8 +71,8 @@
               <!-- Email -->
               <li class="navigation__item">
                 <a href="mailto:{{ site.author.email }}" title="Email {{ site.author.email }}" target="_blank">
-                  <i class="icon icon-mail"></i>
-                  <span class="label">Email</span>
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
                 </a>
               </li>
             {% endif %}
@@ -80,8 +80,8 @@
             <!-- RSS -->
             <li class="navigation__item">
               <a href="{{ "feed.xml" | prepend: site.baseurl }}" title="Subscribe" target="_blank">
-                <i class="icon icon-rss"></i>
-                <span class="label">RSS</span>
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
               </a>
             </li>
           
