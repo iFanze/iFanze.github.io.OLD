@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>【慕课网笔记】Java高并发秒杀API（一）：业务分析与DAO层</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%80-%E4%B8%9A%E5%8A%A1%E5%88%86%E6%9E%90%E4%B8%8EDAO%E5%B1%82/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">Blog</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ空间" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="21 May 2016" class="post-meta__date date">21 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#Java">Java</a> </span>
+    </div>
+    <h1 class="post-title">【慕课网笔记】Java高并发秒杀API（一）：业务分析与DAO层</h1>
+  </header>
+
+  <section class="post">
+    <p>注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。我觉得这是我在慕课网上看得最有价值的视频之一了，从中可以学习到很多项目构建的思路和编码技巧。唯一遗憾的是，这是用Java写的，而我没有用Java写过网站，所以对其中的很多Java依赖库丝毫不了解。不过没有关系，语言只是工具，思想都是相通的。把它放在PHP或者ASP.Net上一定会有类似的框架和方案可以实现同样的功能。也正因如此，若直接看我的这篇博客，可能什么都学不到。这篇博客是为我日后回顾做记录的。想学习相关的内容还是从看慕课网上yijun zhang老师的视频开始吧。</p>
+
+<p>传送门：<a href="http://www.imooc.com/u/2145618/courses?sort=publish">http://www.imooc.com/u/2145618/courses?sort=publish</a></p>
+
+<h2 id="section">课程介绍</h2>
+
+<p>基于SpringMVC + Spring + MyBatis。</p>
+
+<p>秒杀业务：</p>
+
+<ul>
+  <li>具有典型“事务”特性</li>
+  <li>秒杀/红包类应用越来越多</li>
+  <li>面试常问</li>
+</ul>
+
+<h2 id="section-1">相关技术介绍</h2>
+
+<ul>
+  <li>MySQL：表设计、SQL技巧、事务和行级锁</li>
+  <li>MyBatis：DAO层设计与开发、合理使用MyBatis、与Spring的整合</li>
+  <li>Spring：Spring IOC整合Service、声明式事务运用</li>
+  <li>SpringMVC：Restful接口设计和使用、框架运作流程、Controller开发技巧</li>
+  <li>前端：交互设计、Bootstrap、JQuery</li>
+  <li>高并发：高并发点和分析、优化思路和实现。</li>
+</ul>
+
+<h2 id="section-2">创建项目</h2>
+
+<p>从零开始创建、从官网获取资源、使用Maven创建项目然后导入到IntelliJ IDEA工程。</p>
+
+<p>注意使用更高的Servlet版本。</p>
+
+<p>目录：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>main
+--resources
+    --mapper
+        SeckillDao.xml
+        SuccessKilledDao.xml
+    --spring
+        spring-dao.xml
+    mybatis-config.xml
+--webapp
+--java
+    --org.seckill
+        --dao
+        --entity
+--sql
+
+test
+--java
+--resources
+</code></pre>
+</div>
+
+<h2 id="section-3">配置依赖：</h2>
+
+<ol>
+  <li>
+    <p>junit 4.11</p>
+  </li>
+  <li>日志：java常用：slf4j，log4j，logback，common-logging。
+    <ul>
+      <li>slf4j(接口) + logback(实现)</li>
+    </ul>
+  </li>
+  <li>数据库相关：
+    <ul>
+      <li>驱动：mysql-connector-java</li>
+      <li>连接池：c3p0</li>
+      <li>DAO框架：MyBatis</li>
+    </ul>
+  </li>
+  <li>Servlet Web相关依赖
+    <ul>
+      <li>标签：taglibs</li>
+      <li>默认标签库：jstl</li>
+      <li>jackson</li>
+      <li>javax.servlet-api</li>
+    </ul>
+  </li>
+  <li>spring依赖：
+    <ul>
+      <li>核心依赖：spring-core</li>
+      <li>IOC：spring-beans</li>
+      <li>扩展：spring-context</li>
+      <li>DAO层依赖：spring-jdbc</li>
+      <li>事务相关：spring-tx</li>
+      <li>Spring Web相关依赖：spring-web</li>
+      <li>spring-webmvc</li>
+      <li>spring test相关依赖：spring-test</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="section-4">秒杀业务的分析</h2>
+
+<p>核心：用户和商家对库存的处理。</p>
+
+<p>用户：减库存、记录购买明细 =&gt; 事务 =&gt; 数据落地（MySQL Vs NoSQL）</p>
+
+<p>事务机制依然是目前最可靠的数据落地方案。</p>
+
+<p>难点：“竞争”。MySQL：事务 + 行级锁。</p>
+
+<h2 id="section-5">实现哪些秒杀功能</h2>
+
+<ul>
+  <li>秒杀接口暴露</li>
+  <li>执行秒杀</li>
+  <li>相关查询</li>
+</ul>
+
+<p>开发阶段：</p>
+
+<ul>
+  <li>DAO设计编码</li>
+  <li>Service设计编码</li>
+  <li>Web设计编码</li>
+</ul>
+
+<h2 id="section-6">编码</h2>
+
+<h3 id="section-7">数据库设计与编码</h3>
+
+<h4 id="ddl">DDL</h4>
+
+<ul>
+  <li>秒杀库存表：<code class="highlighter-rouge">seckill(seckill_id, name, number, start_time, end_time, create_time)</code></li>
+</ul>
+
+<p>MySQL使用InnoDB引擎（支持事务）。
+在start_time、end_time、create_time上建立索引。</p>
+
+<ul>
+  <li>秒杀成功明细表：<code class="highlighter-rouge">success_killed(seckill_id, user_phone, state, create_time)</code></li>
+</ul>
+
+<p>使用联合主键：seckill_id, user_phone
+在create_time上建立索引。
+state: -1无效，0成功，1已付款….</p>
+
+<p>养成手写DDL的习惯。</p>
+
+<h4 id="dao">DAO实体和接口编码</h4>
+
+<ul>
+  <li>
+    <p>编写Entity类。（技巧：IDE生成getter/setter/tostring）</p>
+  </li>
+  <li>设计DAO接口：实体的CRUD。
+    <ul>
+      <li>SeckillDao：
+        <ul>
+          <li><code class="highlighter-rouge">int reduceNumber(long seckillId, Data killTime)</code></li>
+          <li><code class="highlighter-rouge">Seckill queryById(long seckillId)</code></li>
+          <li><code class="highlighter-rouge">List&lt;Seckill&gt; queryAll(int offset, int limit)</code></li>
+        </ul>
+      </li>
+      <li>SuccessKilledDao:
+        <ul>
+          <li><code class="highlighter-rouge">int insertSuccessKilled(SuccessKilled successKilled)</code>（没必要传整个实体，long seckillId, long userPhone即可）</li>
+          <li><code class="highlighter-rouge">SuccessKilled queryByIdWithSeckill(long seckillId)</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>基于myBatis（或HiberNate）实现DAO。写mapper，为DAO接口方法提供SQL语句配置。</p>
+  </li>
+  <li>myBatis整合Spring：
+    <ul>
+      <li>更少的编码：只写接口，不写实现</li>
+      <li>更少的配置：别名（省去包名）、配置扫描、DAO实现</li>
+      <li>足够的灵活性。（自己定制SQL、自由传参、结果集自动复制）</li>
+    </ul>
+
+    <ol>
+      <li>配置数据库相关参数。</li>
+      <li>数据库连接池c3p0。（连接池属性：数据库连接参数、maxPoolSize、minPoolSize、autoCommitOnClose、checkoutTimeout、acquireRetryAttempts）</li>
+      <li>配置sqlSessionFactory对象：注入数据库连接池、配置MyBatis全局配置文件、扫描entity包并使用别名、扫描sql配置文件(mapper/*.xml)。</li>
+      <li>配置扫描DAO接口包，动态实现DAO接口，注入到spring容器中：注入sqlSessionFactory、给出扫描DAO接口包。</li>
+    </ol>
+  </li>
+</ul>
+
+<h4 id="dao-1">DAO层单元测试和问题排查</h4>
+
+<ul>
+  <li>使用IDE自动生成SeckillDaoTest()方法。</li>
+  <li>配置spring和junit整合，junit启动时加载springIOC容器。告诉junit spring配置文件。</li>
+  <li>注入DAO实现类依赖。（就是声明个成员变量…）</li>
+  <li>编写测试方法。</li>
+</ul>
+
+<p>涨姿势：Java没有保存形参的记录，要对形参使用@params注解。</p>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>【慕课网笔记】Java高并发秒杀API（二）：Service层</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%BA%8C-Service%E5%B1%82/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">Blog</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ空间" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="21 May 2016" class="post-meta__date date">21 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#Java">Java</a> </span>
+    </div>
+    <h1 class="post-title">【慕课网笔记】Java高并发秒杀API（二）：Service层</h1>
+  </header>
+
+  <section class="post">
+    <p>（续前文）</p>
+
+<p>DAO层不写逻辑代码，主要内容：接口设计 + SQL编写。代码和SQL分离，方便Review。</p>
+
+<p>DAO拼接等逻辑在Service层完成。</p>
+
+<h2 id="service">Service接口设计</h2>
+
+<h3 id="section">目录：</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>main
+--resources
+    --mapper
+        SeckillDao.xml
+        SuccessKilledDao.xml
+    --spring
+        spring-dao.xml
+        spring-service.xml
+    mybatis-config.xml
+--webapp
+--java
+    --org.seckill
+        --dao
+        --entity
+        --service
+            --impl
+                SeckillServiceImpl
+            SeckillService
+        --exception
+        --dto           数据传输层
+        --enums
+            SeckillStateEnum
+--sql
+
+test
+--java
+--resources
+</code></pre>
+</div>
+
+<p>设计业务接口：要站在“使用者”角度设计接口，而不是实现。包括三个方面：</p>
+
+<ul>
+  <li>方法定义粒度</li>
+  <li>参数</li>
+  <li>返回类型（return 类型/异常）</li>
+</ul>
+
+<h3 id="section-1">编码：</h3>
+
+<p>DTO：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">Exposer</span><span class="o">{</span>
+    <span class="kt">boolean</span> <span class="n">exposed</span><span class="o">;</span>    <span class="c1">//是否开启秒杀</span>
+    <span class="n">String</span> <span class="n">md5</span><span class="o">;</span>
+    <span class="kt">long</span> <span class="n">seckillId</span><span class="o">;</span>
+    <span class="kt">long</span> <span class="n">now</span><span class="o">;</span>
+    <span class="kt">long</span> <span class="n">start</span><span class="o">;</span>
+    <span class="kt">long</span> <span class="n">end</span><span class="o">;</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">SeckillExecution</span><span class="o">{</span>
+    <span class="kt">long</span> <span class="n">seckillId</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">state</span><span class="o">;</span>
+    <span class="n">String</span> <span class="n">stateInfo</span><span class="o">;</span>
+    <span class="n">SuccessKilled</span> <span class="n">successKilled</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Exception:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1">// 重复秒杀异常（运行期异常）</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RepeatKillException</span> <span class="kd">extends</span> <span class="n">SeckillException</span><span class="o">{</span>
+    
+<span class="o">}</span>
+<span class="c1">// 秒杀关闭异常</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SeckillCloseException</span> <span class="kd">extends</span> <span class="n">SeckillException</span><span class="o">{</span>
+
+<span class="o">}</span>
+<span class="c1">// 秒杀相关业务异常（通用异常）</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SeckillException</span> <span class="kd">extends</span> <span class="n">RuntimeException</span><span class="o">{</span>
+    <span class="c1">//IDE自动生成</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Service:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">interface</span> <span class="nc">SeckilService</span><span class="o">{</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Seckill</span><span class="o">&gt;</span> <span class="n">getSeckillList</span><span class="o">();</span>
+    <span class="n">Seckill</span> <span class="n">getById</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">);</span>
+    <span class="n">Exposer</span> <span class="n">exportSeckillUrl</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">);</span>
+    <span class="n">SeckillExecution</span> <span class="n">executeSeckill</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">,</span> <span class="kt">long</span> <span class="n">userPhone</span><span class="o">,</span> <span class="n">String</span> <span class="n">md5</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">SeckillException</span><span class="o">,</span> <span class="n">RepeatKillException</span><span class="o">,</span> <span class="n">SeckillCloseException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>实现Service：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">SeckillServiceImpl</span> <span class="kd">implements</span> <span class="n">SeckillService</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Logger</span> <span class="n">logger</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+    <span class="kd">private</span> <span class="n">SeckillDao</span> <span class="n">seckillDao</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">SuccessKilledDao</span> <span class="n">successKilledDao</span><span class="o">;</span>
+    
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">string</span> <span class="n">salt</span> <span class="o">=</span> <span class="s">"rgafghasdjfas;dfjads;fj"</span><span class="o">;</span>  <span class="c1">//盐值，混淆MD5。</span>
+    
+    <span class="nd">@Override</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Seckill</span><span class="o">&gt;</span> <span class="n">getSeckillList</span><span class="o">(){</span>
+    
+    <span class="o">}</span>
+    
+    <span class="n">Seckill</span> <span class="n">getById</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">){</span>
+    
+    <span class="o">}</span>
+    
+    <span class="n">Exposer</span> <span class="n">exportSeckillUrl</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">){</span>
+        <span class="c1">//拿到Seckill对象</span>
+        <span class="c1">//比较nowTime是否在startTime和endTime之间。返回相应的 new Exposer()。</span>
+    <span class="o">}</span>
+    
+    <span class="c1">// 多看看这个函数的实现，很有用！！(放在本文的最后了。)</span>
+    <span class="n">SeckillExecution</span> <span class="n">executeSeckill</span><span class="o">(</span><span class="kt">long</span> <span class="n">seckillId</span><span class="o">,</span> <span class="kt">long</span> <span class="n">userPhone</span><span class="o">,</span> <span class="n">String</span> <span class="n">md5</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">SeckillException</span><span class="o">,</span> <span class="n">RepeatKillException</span><span class="o">,</span> <span class="n">SeckillCloseException</span><span class="o">{</span>
+        <span class="c1">//判断md5是否存在和是否被篡改</span>
+        <span class="c1">//执行秒杀逻辑：减库存、记录购买行为。抛出异常或者返回new SeckillExecution()。注意这里的try...catch和throw异常的使用。</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>可以把状态（数据字典）封装成枚举：SeckillStatEnum，尽量遵循枚举的开发规范。</p>
+
+<h2 id="springservice">使用Spring托管Service依赖理论</h2>
+
+<p>Spring IOC：依赖注入。对对象工厂和依赖管理可以获得一致的访问接口。</p>
+
+<p>业务对象依赖图：
+<img src="/images/posts/14638488325375.jpg" alt="" /></p>
+
+<p>为什么用IOC：</p>
+
+<ul>
+  <li>对象创建统一管理</li>
+  <li>规范的生命周期管理</li>
+  <li>灵活的依赖注入</li>
+  <li>一致的获取对象</li>
+</ul>
+
+<p>Spring IOC注入方式和场景：</p>
+
+<ul>
+  <li>XML：来自第三方类库，需要命名空间配置</li>
+  <li>注解：项目中自身开发使用的类，如@Service、@Controller</li>
+  <li>Java配置类：通过代码控制对象创建逻辑，如自定义修改依赖类库</li>
+</ul>
+
+<p>本项目IOC使用：</p>
+
+<ul>
+  <li>XML配置</li>
+  <li>package-scan（包扫描）</li>
+  <li>Annotation注解</li>
+</ul>
+
+<h3 id="section-2">编码</h3>
+
+<ul>
+  <li>创建spring-service.xml：扫描service包下所有使用注解的类型</li>
+  <li>对SeckillServiceImpl使用@Service注解，注入Service依赖（对成员变量使用@Autowired）。</li>
+</ul>
+
+<blockquote>
+  <p>扩展：@Component、@Service、@Dao、@Controller。@Autowired、@Resource、@Inject。</p>
+</blockquote>
+
+<h3 id="spring">使用Spring声明式事务理论</h3>
+
+<p>声明式事务：解脱事务代码，交给第三方框架。</p>
+
+<p>使用方式：</p>
+
+<ul>
+  <li>早期：ProxyFactoryBean + XML。</li>
+  <li>tx:advice + aop命名空间：一次配置永久生效。（使用较多）</li>
+  <li>注解@Transactional：注解控制。（更推荐）</li>
+</ul>
+
+<p>使用注解控制事务方法的优点：</p>
+
+<ul>
+  <li>开发团队达成一致约定，明确标注事务方法的编程风格</li>
+  <li>保证事务方法的执行时间尽可能短，不要穿插其它网络操作（RPC/HTTP请求）或者剥离到事务方法外部。</li>
+  <li>不是所有的方法都需要事务，如只有一条修改操作，只读操作不需要事务控制。</li>
+</ul>
+
+<p>事务方法嵌套：声明式事务独有的概念，当有新的事务到来时：propagation_required等。</p>
+
+<p>什么时候回滚事务：</p>
+
+<ul>
+  <li>抛出运行期异常（RuntimeException）</li>
+  <li>要小心不当的try-catch。</li>
+</ul>
+
+<p>具体配置：</p>
+
+<ul>
+  <li>配置事务管理器（jdbc）：注入数据库连接池</li>
+  <li>配置基于注解的声明式事务，默认使用注解来管理事务行为</li>
+</ul>
+
+<h2 id="service-1">使用集成测试Service逻辑</h2>
+
+<ul>
+  <li>使用Logback记录日志。</li>
+  <li>注意异常情况的处理。</li>
+</ul>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>

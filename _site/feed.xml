@@ -5,9 +5,448 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 21 May 2016 22:25:33 +0800</pubDate>
-    <lastBuildDate>Sat, 21 May 2016 22:25:33 +0800</lastBuildDate>
+    <pubDate>Sun, 22 May 2016 00:54:23 +0800</pubDate>
+    <lastBuildDate>Sun, 22 May 2016 00:54:23 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>【慕课网笔记】Java高并发秒杀API（二）：Service层</title>
+        <description>&lt;p&gt;（续前文）&lt;/p&gt;
+
+&lt;p&gt;DAO层不写逻辑代码，主要内容：接口设计 + SQL编写。代码和SQL分离，方便Review。&lt;/p&gt;
+
+&lt;p&gt;DAO拼接等逻辑在Service层完成。&lt;/p&gt;
+
+&lt;h2 id=&quot;service&quot;&gt;Service接口设计&lt;/h2&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;目录：&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;main
+--resources
+    --mapper
+        SeckillDao.xml
+        SuccessKilledDao.xml
+    --spring
+        spring-dao.xml
+        spring-service.xml
+    mybatis-config.xml
+--webapp
+--java
+    --org.seckill
+        --dao
+        --entity
+        --service
+            --impl
+                SeckillServiceImpl
+            SeckillService
+        --exception
+        --dto           数据传输层
+        --enums
+            SeckillStateEnum
+--sql
+
+test
+--java
+--resources
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;设计业务接口：要站在“使用者”角度设计接口，而不是实现。包括三个方面：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;方法定义粒度&lt;/li&gt;
+  &lt;li&gt;参数&lt;/li&gt;
+  &lt;li&gt;返回类型（return 类型/异常）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;编码：&lt;/h3&gt;
+
+&lt;p&gt;DTO：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exposer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exposed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//是否开启秒杀&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillExecution&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stateInfo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;SuccessKilled&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;successKilled&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Exception:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// 重复秒杀异常（运行期异常）&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;RepeatKillException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// 秒杀关闭异常&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillCloseException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// 秒杀相关业务异常（通用异常）&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RuntimeException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//IDE自动生成&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Service:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckilService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getSeckillList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getById&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Exposer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exportSeckillUrl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;SeckillExecution&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executeSeckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userPhone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RepeatKillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillCloseException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;实现Service：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillServiceImpl&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Logger&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LoggerFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getLogger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillDao&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillDao&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SuccessKilledDao&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;successKilledDao&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;salt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;rgafghasdjfas;dfjads;fj&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//盐值，混淆MD5。&lt;/span&gt;
+    
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getSeckillList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+    
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getById&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+    
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;Exposer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exportSeckillUrl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//拿到Seckill对象&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//比较nowTime是否在startTime和endTime之间。返回相应的 new Exposer()。&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;// 多看看这个函数的实现，很有用！！(放在本文的最后了。)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;SeckillExecution&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executeSeckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userPhone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RepeatKillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillCloseException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//判断md5是否存在和是否被篡改&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//执行秒杀逻辑：减库存、记录购买行为。抛出异常或者返回new SeckillExecution()。注意这里的try...catch和throw异常的使用。&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以把状态（数据字典）封装成枚举：SeckillStatEnum，尽量遵循枚举的开发规范。&lt;/p&gt;
+
+&lt;h2 id=&quot;springservice&quot;&gt;使用Spring托管Service依赖理论&lt;/h2&gt;
+
+&lt;p&gt;Spring IOC：依赖注入。对对象工厂和依赖管理可以获得一致的访问接口。&lt;/p&gt;
+
+&lt;p&gt;业务对象依赖图：
+&lt;img src=&quot;/images/posts/14638488325375.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;为什么用IOC：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;对象创建统一管理&lt;/li&gt;
+  &lt;li&gt;规范的生命周期管理&lt;/li&gt;
+  &lt;li&gt;灵活的依赖注入&lt;/li&gt;
+  &lt;li&gt;一致的获取对象&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Spring IOC注入方式和场景：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;XML：来自第三方类库，需要命名空间配置&lt;/li&gt;
+  &lt;li&gt;注解：项目中自身开发使用的类，如@Service、@Controller&lt;/li&gt;
+  &lt;li&gt;Java配置类：通过代码控制对象创建逻辑，如自定义修改依赖类库&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;本项目IOC使用：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;XML配置&lt;/li&gt;
+  &lt;li&gt;package-scan（包扫描）&lt;/li&gt;
+  &lt;li&gt;Annotation注解&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;编码&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;创建spring-service.xml：扫描service包下所有使用注解的类型&lt;/li&gt;
+  &lt;li&gt;对SeckillServiceImpl使用@Service注解，注入Service依赖（对成员变量使用@Autowired）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;扩展：@Component、@Service、@Dao、@Controller。@Autowired、@Resource、@Inject。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;spring&quot;&gt;使用Spring声明式事务理论&lt;/h3&gt;
+
+&lt;p&gt;声明式事务：解脱事务代码，交给第三方框架。&lt;/p&gt;
+
+&lt;p&gt;使用方式：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;早期：ProxyFactoryBean + XML。&lt;/li&gt;
+  &lt;li&gt;tx:advice + aop命名空间：一次配置永久生效。（使用较多）&lt;/li&gt;
+  &lt;li&gt;注解@Transactional：注解控制。（更推荐）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使用注解控制事务方法的优点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;开发团队达成一致约定，明确标注事务方法的编程风格&lt;/li&gt;
+  &lt;li&gt;保证事务方法的执行时间尽可能短，不要穿插其它网络操作（RPC/HTTP请求）或者剥离到事务方法外部。&lt;/li&gt;
+  &lt;li&gt;不是所有的方法都需要事务，如只有一条修改操作，只读操作不需要事务控制。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;事务方法嵌套：声明式事务独有的概念，当有新的事务到来时：propagation_required等。&lt;/p&gt;
+
+&lt;p&gt;什么时候回滚事务：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;抛出运行期异常（RuntimeException）&lt;/li&gt;
+  &lt;li&gt;要小心不当的try-catch。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;具体配置：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;配置事务管理器（jdbc）：注入数据库连接池&lt;/li&gt;
+  &lt;li&gt;配置基于注解的声明式事务，默认使用注解来管理事务行为&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;service-1&quot;&gt;使用集成测试Service逻辑&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用Logback记录日志。&lt;/li&gt;
+  &lt;li&gt;注意异常情况的处理。&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 21 May 2016 23:05:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%BA%8C-Service%E5%B1%82/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%BA%8C-Service%E5%B1%82/</guid>
+        
+        <category>Java</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>【慕课网笔记】Java高并发秒杀API（一）：业务分析与DAO层</title>
+        <description>&lt;p&gt;注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。我觉得这是我在慕课网上看得最有价值的视频之一了，从中可以学习到很多项目构建的思路和编码技巧。唯一遗憾的是，这是用Java写的，而我没有用Java写过网站，所以对其中的很多Java依赖库丝毫不了解。不过没有关系，语言只是工具，思想都是相通的。把它放在PHP或者ASP.Net上一定会有类似的框架和方案可以实现同样的功能。也正因如此，若直接看我的这篇博客，可能什么都学不到。这篇博客是为我日后回顾做记录的。想学习相关的内容还是从看慕课网上yijun zhang老师的视频开始吧。&lt;/p&gt;
+
+&lt;p&gt;传送门：&lt;a href=&quot;http://www.imooc.com/u/2145618/courses?sort=publish&quot;&gt;http://www.imooc.com/u/2145618/courses?sort=publish&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;课程介绍&lt;/h2&gt;
+
+&lt;p&gt;基于SpringMVC + Spring + MyBatis。&lt;/p&gt;
+
+&lt;p&gt;秒杀业务：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;具有典型“事务”特性&lt;/li&gt;
+  &lt;li&gt;秒杀/红包类应用越来越多&lt;/li&gt;
+  &lt;li&gt;面试常问&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;相关技术介绍&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;MySQL：表设计、SQL技巧、事务和行级锁&lt;/li&gt;
+  &lt;li&gt;MyBatis：DAO层设计与开发、合理使用MyBatis、与Spring的整合&lt;/li&gt;
+  &lt;li&gt;Spring：Spring IOC整合Service、声明式事务运用&lt;/li&gt;
+  &lt;li&gt;SpringMVC：Restful接口设计和使用、框架运作流程、Controller开发技巧&lt;/li&gt;
+  &lt;li&gt;前端：交互设计、Bootstrap、JQuery&lt;/li&gt;
+  &lt;li&gt;高并发：高并发点和分析、优化思路和实现。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;创建项目&lt;/h2&gt;
+
+&lt;p&gt;从零开始创建、从官网获取资源、使用Maven创建项目然后导入到IntelliJ IDEA工程。&lt;/p&gt;
+
+&lt;p&gt;注意使用更高的Servlet版本。&lt;/p&gt;
+
+&lt;p&gt;目录：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;main
+--resources
+    --mapper
+        SeckillDao.xml
+        SuccessKilledDao.xml
+    --spring
+        spring-dao.xml
+    mybatis-config.xml
+--webapp
+--java
+    --org.seckill
+        --dao
+        --entity
+--sql
+
+test
+--java
+--resources
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;配置依赖：&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;junit 4.11&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;日志：java常用：slf4j，log4j，logback，common-logging。
+    &lt;ul&gt;
+      &lt;li&gt;slf4j(接口) + logback(实现)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;数据库相关：
+    &lt;ul&gt;
+      &lt;li&gt;驱动：mysql-connector-java&lt;/li&gt;
+      &lt;li&gt;连接池：c3p0&lt;/li&gt;
+      &lt;li&gt;DAO框架：MyBatis&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Servlet Web相关依赖
+    &lt;ul&gt;
+      &lt;li&gt;标签：taglibs&lt;/li&gt;
+      &lt;li&gt;默认标签库：jstl&lt;/li&gt;
+      &lt;li&gt;jackson&lt;/li&gt;
+      &lt;li&gt;javax.servlet-api&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;spring依赖：
+    &lt;ul&gt;
+      &lt;li&gt;核心依赖：spring-core&lt;/li&gt;
+      &lt;li&gt;IOC：spring-beans&lt;/li&gt;
+      &lt;li&gt;扩展：spring-context&lt;/li&gt;
+      &lt;li&gt;DAO层依赖：spring-jdbc&lt;/li&gt;
+      &lt;li&gt;事务相关：spring-tx&lt;/li&gt;
+      &lt;li&gt;Spring Web相关依赖：spring-web&lt;/li&gt;
+      &lt;li&gt;spring-webmvc&lt;/li&gt;
+      &lt;li&gt;spring test相关依赖：spring-test&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-4&quot;&gt;秒杀业务的分析&lt;/h2&gt;
+
+&lt;p&gt;核心：用户和商家对库存的处理。&lt;/p&gt;
+
+&lt;p&gt;用户：减库存、记录购买明细 =&amp;gt; 事务 =&amp;gt; 数据落地（MySQL Vs NoSQL）&lt;/p&gt;
+
+&lt;p&gt;事务机制依然是目前最可靠的数据落地方案。&lt;/p&gt;
+
+&lt;p&gt;难点：“竞争”。MySQL：事务 + 行级锁。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-5&quot;&gt;实现哪些秒杀功能&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;秒杀接口暴露&lt;/li&gt;
+  &lt;li&gt;执行秒杀&lt;/li&gt;
+  &lt;li&gt;相关查询&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;开发阶段：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;DAO设计编码&lt;/li&gt;
+  &lt;li&gt;Service设计编码&lt;/li&gt;
+  &lt;li&gt;Web设计编码&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-6&quot;&gt;编码&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;数据库设计与编码&lt;/h3&gt;
+
+&lt;h4 id=&quot;ddl&quot;&gt;DDL&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;秒杀库存表：&lt;code class=&quot;highlighter-rouge&quot;&gt;seckill(seckill_id, name, number, start_time, end_time, create_time)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;MySQL使用InnoDB引擎（支持事务）。
+在start_time、end_time、create_time上建立索引。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;秒杀成功明细表：&lt;code class=&quot;highlighter-rouge&quot;&gt;success_killed(seckill_id, user_phone, state, create_time)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使用联合主键：seckill_id, user_phone
+在create_time上建立索引。
+state: -1无效，0成功，1已付款….&lt;/p&gt;
+
+&lt;p&gt;养成手写DDL的习惯。&lt;/p&gt;
+
+&lt;h4 id=&quot;dao&quot;&gt;DAO实体和接口编码&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;编写Entity类。（技巧：IDE生成getter/setter/tostring）&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;设计DAO接口：实体的CRUD。
+    &lt;ul&gt;
+      &lt;li&gt;SeckillDao：
+        &lt;ul&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;int reduceNumber(long seckillId, Data killTime)&lt;/code&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Seckill queryById(long seckillId)&lt;/code&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;List&amp;lt;Seckill&amp;gt; queryAll(int offset, int limit)&lt;/code&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;SuccessKilledDao:
+        &lt;ul&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;int insertSuccessKilled(SuccessKilled successKilled)&lt;/code&gt;（没必要传整个实体，long seckillId, long userPhone即可）&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SuccessKilled queryByIdWithSeckill(long seckillId)&lt;/code&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;基于myBatis（或HiberNate）实现DAO。写mapper，为DAO接口方法提供SQL语句配置。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;myBatis整合Spring：
+    &lt;ul&gt;
+      &lt;li&gt;更少的编码：只写接口，不写实现&lt;/li&gt;
+      &lt;li&gt;更少的配置：别名（省去包名）、配置扫描、DAO实现&lt;/li&gt;
+      &lt;li&gt;足够的灵活性。（自己定制SQL、自由传参、结果集自动复制）&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;配置数据库相关参数。&lt;/li&gt;
+      &lt;li&gt;数据库连接池c3p0。（连接池属性：数据库连接参数、maxPoolSize、minPoolSize、autoCommitOnClose、checkoutTimeout、acquireRetryAttempts）&lt;/li&gt;
+      &lt;li&gt;配置sqlSessionFactory对象：注入数据库连接池、配置MyBatis全局配置文件、扫描entity包并使用别名、扫描sql配置文件(mapper/*.xml)。&lt;/li&gt;
+      &lt;li&gt;配置扫描DAO接口包，动态实现DAO接口，注入到spring容器中：注入sqlSessionFactory、给出扫描DAO接口包。&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;dao-1&quot;&gt;DAO层单元测试和问题排查&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用IDE自动生成SeckillDaoTest()方法。&lt;/li&gt;
+  &lt;li&gt;配置spring和junit整合，junit启动时加载springIOC容器。告诉junit spring配置文件。&lt;/li&gt;
+  &lt;li&gt;注入DAO实现类依赖。（就是声明个成员变量…）&lt;/li&gt;
+  &lt;li&gt;编写测试方法。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;涨姿势：Java没有保存形参的记录，要对形参使用@params注解。&lt;/p&gt;
+
+</description>
+        <pubDate>Sat, 21 May 2016 22:05:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%80-%E4%B8%9A%E5%8A%A1%E5%88%86%E6%9E%90%E4%B8%8EDAO%E5%B1%82/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91%E7%AC%94%E8%AE%B0-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%80-%E4%B8%9A%E5%8A%A1%E5%88%86%E6%9E%90%E4%B8%8EDAO%E5%B1%82/</guid>
+        
+        <category>Java</category>
+        
+        
+      </item>
     
       <item>
         <title>关于我</title>
