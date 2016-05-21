@@ -5,8 +5,8 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 22 May 2016 00:54:23 +0800</pubDate>
-    <lastBuildDate>Sun, 22 May 2016 00:54:23 +0800</lastBuildDate>
+    <pubDate>Sun, 22 May 2016 02:04:47 +0800</pubDate>
+    <lastBuildDate>Sun, 22 May 2016 02:04:47 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
     
       <item>
@@ -240,7 +240,9 @@ test
     
       <item>
         <title>【慕课网笔记】Java高并发秒杀API（一）：业务分析与DAO层</title>
-        <description>&lt;p&gt;注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。我觉得这是我在慕课网上看得最有价值的视频之一了，从中可以学习到很多项目构建的思路和编码技巧。唯一遗憾的是，这是用Java写的，而我没有用Java写过网站，所以对其中的很多Java依赖库丝毫不了解。不过没有关系，语言只是工具，思想都是相通的。把它放在PHP或者ASP.Net上一定会有类似的框架和方案可以实现同样的功能。也正因如此，若直接看我的这篇博客，可能什么都学不到。这篇博客是为我日后回顾做记录的。想学习相关的内容还是从看慕课网上yijun zhang老师的视频开始吧。&lt;/p&gt;
+        <description>&lt;p&gt;注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。&lt;/p&gt;
+
+&lt;p&gt;我觉得这是我在慕课网上看得最有价值的视频之一了，从中可以学习到很多项目构建的思路和编码技巧。唯一遗憾的是，这是用Java写的，而我没有用Java写过网站，所以对其中的很多Java依赖库丝毫不了解。不过没有关系，语言只是工具，思想都是相通的。把它放在PHP或者ASP.Net上一定会有类似的框架和方案可以实现同样的功能。也正因如此，若直接看我的这篇博客，可能什么都学不到。这篇博客是为我日后回顾做记录的。想学习相关的内容还是从看慕课网上yijun zhang老师的视频开始吧。&lt;/p&gt;
 
 &lt;p&gt;传送门：&lt;a href=&quot;http://www.imooc.com/u/2145618/courses?sort=publish&quot;&gt;http://www.imooc.com/u/2145618/courses?sort=publish&lt;/a&gt;&lt;/p&gt;
 
@@ -454,7 +456,7 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
 
 &lt;p&gt;本博客将记录我今后的学习历程，主要是Web相关的技术。&lt;/p&gt;
 
-&lt;h3 id=&quot;section&quot;&gt;经历&lt;/h3&gt;
+&lt;h2 id=&quot;section&quot;&gt;经历&lt;/h2&gt;
 
 &lt;p&gt;我出生在一个平凡的小县城，现就读于武汉大学这所美丽的大学。主修GIS，在大学期间做过很多Web开发相关的项目。经过在这里已经近五年的学习和生活，自己渐渐明确了将来在这条职业道路上的发展方向。&lt;/p&gt;
 
@@ -462,11 +464,11 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
 
 &lt;p&gt;现在，在这毕业找工作之际，我建立起这篇博客，期待在接下来的日子中，自己能够将琐碎的知识组织起来，并有所输出。我想是大有裨益的。&lt;/p&gt;
 
-&lt;h3 id=&quot;section-1&quot;&gt;爱好&lt;/h3&gt;
+&lt;h2 id=&quot;section-1&quot;&gt;爱好&lt;/h2&gt;
 
 &lt;p&gt;我喜欢和计算机，手机，以及其它智能设备打交道。追求硬件、软件和互联网产品上更优质和更高效的使用体验。有时会宅在电脑前玩LOL，自诩不坑。也有时拿起相机出去拍拍片，审美不行的我水平特渣，努力提升ing。&lt;/p&gt;
 
-&lt;h3 id=&quot;section-2&quot;&gt;阅读&lt;/h3&gt;
+&lt;h2 id=&quot;section-2&quot;&gt;阅读&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;《算法导论》&lt;/li&gt;
@@ -479,7 +481,7 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
   &lt;li&gt;《快乐的Linux命令行》&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&quot;section-3&quot;&gt;受益于&lt;/h3&gt;
+&lt;h2 id=&quot;section-3&quot;&gt;受益于&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;http://www.liaoxuefeng.com/&quot;&gt;廖雪峰的官方网站&lt;/a&gt;&lt;/li&gt;
@@ -490,7 +492,7 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
   &lt;li&gt;&lt;a href=&quot;http://w3school.com.cn/&quot;&gt;w3shool 在线教程&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&quot;section-4&quot;&gt;关注&lt;/h3&gt;
+&lt;h2 id=&quot;section-4&quot;&gt;关注&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;http://ithome.com&quot;&gt;IT之家 - 数码，科技，生活&lt;/a&gt;&lt;/li&gt;
@@ -503,15 +505,17 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
   &lt;li&gt;&lt;a href=&quot;http://bbs.pcbeta.com&quot;&gt;远景论坛 - 微软极客社区&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;h2 id=&quot;section-5&quot;&gt;加我好友&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/code.jpg&quot; alt=&quot;code&quot; /&gt;&lt;/p&gt;
+
 </description>
         <pubDate>Fri, 20 May 2016 22:05:40 +0800</pubDate>
         <link>http://iFanze.cn//about/</link>
         <guid isPermaLink="true">http://iFanze.cn//about/</guid>
         
-        <category>关于</category>
+        <category>日志</category>
         
-        
-        <category>关于</category>
         
       </item>
     

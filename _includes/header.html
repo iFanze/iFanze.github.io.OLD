@@ -20,7 +20,9 @@
 
           <nav class="cover-navigation cover-navigation--primary">
             <ul class="navigation">
-              <li class="navigation__item"><a href="{{ site.baseurl }}#blog" title="link to {{ site.title }} blog" class="blog-button">Blog</a></li>
+              <li class="navigation__item"><a href="{{ site.baseurl }}#blog" title="link to {{ site.title }} blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="{{ site.baseurl }}tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="{{ site.baseurl }}About" title="关于我" class="blog-button">关于</a></li>
             </ul>
           </nav>
 
@@ -30,7 +32,7 @@
             {% if site.author.qq %}
               <!-- QQ -->
               <li class="navigation__item">
-                <a href="http://fanze.qzone.qq.com" title="QQ空间" target="_blank">
+                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
                   <i class="fa fa-qq" aria-hidden="true"></i>
                   <span class="label">QQ</span>
                 </a>
@@ -85,6 +87,14 @@
               </a>
             </li>
           
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
             </ul>
           </nav>
 
