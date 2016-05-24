@@ -5,9 +5,220 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 23 May 2016 19:02:04 +0800</pubDate>
-    <lastBuildDate>Mon, 23 May 2016 19:02:04 +0800</lastBuildDate>
+    <pubDate>Wed, 25 May 2016 01:39:10 +0800</pubDate>
+    <lastBuildDate>Wed, 25 May 2016 01:39:10 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>Mac搭建PHP开发环境</title>
+        <description>&lt;p&gt;注：之前做PHP的项目都是在Windows使用XAMPP一站式搞定Apache + MySQL + PHP的环境问题，这次我想要在OS X上用PHP实现下之前提到的秒杀系统，首先就需要体验一下在Unix/Linux环境中配置环境的过程。虽然任务不艰难但还是有些地方困扰到了我的，所以做一篇总结。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;方案选择&lt;/h2&gt;
+
+&lt;p&gt;在Mac上搭建相关开发环境的方式网上有太多了，我总结了下，按照配置过程由简单到复杂、配置灵活性由小到大的顺序大致可以总结为：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;使用系统自带Apache和PHP。Mac OS X已经整合了这两个，自然是最简单的，好像只要在httpd.conf里启用php相关的模块就可以直接使用了。但是系统里并没有整合MySQL。并且，看知乎上大家说会有一些问题，比如系统升级丢失模块配置等等。简单玩了玩就放弃了这种方案。&lt;/li&gt;
+  &lt;li&gt;使用Xampp等GUI整合安装包。这个和Windows完全一样的感觉，没意思，用Unix/Linux就是要用CLI嘛。&lt;/li&gt;
+  &lt;li&gt;使用Homebrew等包管理工具进行安装。这是我最后采用的方法。配置复杂度和灵活性都介于上下两种方案之间。&lt;/li&gt;
+  &lt;li&gt;直接下载、编译和使用源码包。虽说这是使用开源软件最通用的方式，但是对于Apache这种感觉很牛的软件，这一次我不想太关注细节，万一出现编译错误或者一些不懂的细枝末节就有些浪费时间了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;现在开始吧~&lt;/p&gt;
+
+&lt;h2 id=&quot;homebrew&quot;&gt;Homebrew的基本使用&lt;/h2&gt;
+
+&lt;p&gt;Homebrew在Mac平台上也算是鼎鼎大名的软件了，自己老早就安装并且研究过。把常用的命令整理如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew update                               //更新源
+brew search  xxx                          //搜索包
+brew install xxx                          //安装包
+brew list                                 //已安装列表
+brew uninstall xxx                        //卸载包
+brew upgrade xxx                          //升级包
+brew tap xxx                              //添加仓库
+brew services list                        //已安装brew服务的状态
+brew services start/stop/restart httpd24  //启动、停止、重启Apache
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;apache&quot;&gt;Apache的安装&lt;/h2&gt;
+
+&lt;p&gt;Apache并没有在homebrew的默认仓库中，要使用&lt;code class=&quot;highlighter-rouge&quot;&gt;brew tap homebrew/apache&lt;/code&gt;来添加相应的仓库，或者直接运行以下命令进行安装，这里选择的是2.4版本：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew install homebrew/apache/httpd24
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;根据Homebrew的规则，默认安装到&lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/local&lt;/code&gt;目录下。二进制文件、配置文件、日志文件等都存放在其下的各子目录中。&lt;/p&gt;
+
+&lt;h2 id=&quot;apache-1&quot;&gt;Apache的配置和虚拟主机&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;修改监听端口。&lt;/strong&gt;Apache默认监听8080端口，通过修改&lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/local/etc/apache2/2.4/httpd.conf&lt;/code&gt;中的下面一行更改至80端口。&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+  Listen 80
+ &lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;配置虚拟主机。&lt;/strong&gt;可以发现，默认服务器根目录是在&lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/local/var/www/htdocs&lt;/code&gt;目录下。我习惯将自己放在Github上的源代码全放在自己的Home下，又不想更改这个默认配置。所以我选择配置开启虚拟主机模块。取消掉这一行的注释即可：&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+  Include /usr/local/etc/apache2/2.4/extra/httpd-vhosts.conf
+ &lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;然后编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;httpd-vhosts.conf&lt;/code&gt;这个文件：&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;VirtualHost *:80&amp;gt;
+ServerAdmin ifanze-local@outlook.com
+DocumentRoot &quot;/Users/Fanze/Github/SeckillPHP&quot;
+ServerName seckillphp.ifanze-local.cn
+ErrorLog &quot;/usr/local/var/log/apache2/seckillphp.ifanze-local.cn-error_log&quot;
+CustomLog &quot;/usr/local/var/log/apache2/seckillphp.ifanze-local.cn-access_log&quot; common
+&amp;lt;Directory &quot;/Users/Fanze/Github/SeckillPHP/&quot;&amp;gt;
+Options FollowSymLinks Indexes MultiViews
+AllowOverride None
+Require all granted
+&amp;lt;/Directory&amp;gt;
+&amp;lt;/VirtualHost&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;几点说明：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;这里我使用了&lt;code class=&quot;highlighter-rouge&quot;&gt;seckillphp.ifanze-local.cn&lt;/code&gt;作为ServerName，所以要修改host文件，要将它指向&lt;code class=&quot;highlighter-rouge&quot;&gt;127.0.0.1&lt;/code&gt;。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;需要Directory一段，无论是写在这个文件里还是在httpd.conf里。否则会遇到没权限访问的问题。其中的含义网上很容易找到，但需要注意，apache 2.4不同于旧版，使用&lt;code class=&quot;highlighter-rouge&quot;&gt;Require all granted&lt;/code&gt;替代了之前要写的&lt;code class=&quot;highlighter-rouge&quot;&gt;Order deny,allow&lt;/code&gt;等配置访问权限。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;控制Apache服务的开关。&lt;/strong&gt;注意到使用&lt;code class=&quot;highlighter-rouge&quot;&gt;which apachectl&lt;/code&gt;可以查看到apachectl已经从系统自带的apache路径自动改到了我们刚刚安装apache的路径下，所以可以直接使用以下命令控制apache开关：&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+  sudo apachectl start
+  sudo apachectl stop
+ &lt;/code&gt;
+ 此外，同样自动为我们做好的还包括使用brew services：&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+  sudo brew services start httpd24
+  sudo brew services stop httpd24
+ &lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;效果是相同的。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;php&quot;&gt;PHP的安装&lt;/h2&gt;
+
+&lt;p&gt;之前在Windows上使用的PHP版本是5.5或者5.6，取决于要连接的Oracle数据库是11g还是12c。截止到今天（2016年5月24日），PHP7已经正式发布并且最新版本已经到7.0.6了。看慕课网上的视频了解到PHP7主要的改进包括&lt;strong&gt;性能提升&lt;/strong&gt;和&lt;strong&gt;变量类型&lt;/strong&gt;。（艾玛这还是我认识的那个声明变量从来不用声明类型的PHP吗？）既然这次是自己自发进行的一次练习，就果断选择最新的版本用上吧！&lt;/p&gt;
+
+&lt;p&gt;和apache一样，php也不在默认仓库中：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew install homebrew/php/php70
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;安装路径也默认和apache相似，不过安装完成后，如果直接执行&lt;code class=&quot;highlighter-rouge&quot;&gt;php -v&lt;/code&gt;会发现还是系统自带的php。&lt;/p&gt;
+
+&lt;h2 id=&quot;apachephp&quot;&gt;Apache配置PHP模块&lt;/h2&gt;
+
+&lt;p&gt;PHP的安装路径下包括了供apache使用的&lt;code class=&quot;highlighter-rouge&quot;&gt;libphp7.so&lt;/code&gt;模块。只需要配置httpd.conf文件，新增配置：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;LoadModule php7_module /usr/local/Cellar/php70/7.0.6/libexec/apache2/libphp7.so
+
+&amp;lt;FilesMatch .php$&amp;gt;
+    SetHandler application/x-httpd-php
+&amp;lt;/FilesMatch&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中，FilesMatch部分也能够顾名思义。还有一处设置默认文档的地方也要增加一项&lt;code class=&quot;highlighter-rouge&quot;&gt;index.php&lt;/code&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;IfModule dir_module&amp;gt;
+    DirectoryIndex index.html index.php
+&amp;lt;/IfModule&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;重启Apache。&lt;/p&gt;
+
+&lt;h2 id=&quot;apachephp-1&quot;&gt;测试Apache+PHP&lt;/h2&gt;
+
+&lt;p&gt;在虚拟主机的根目录下建立&lt;code class=&quot;highlighter-rouge&quot;&gt;index.php&lt;/code&gt;，输出&lt;code class=&quot;highlighter-rouge&quot;&gt;phpinfo()&lt;/code&gt;，浏览器中打开Hostname就能看到预示着配置成功的页面了~&lt;/p&gt;
+
+&lt;h2 id=&quot;mysql&quot;&gt;安装MySQL&lt;/h2&gt;
+
+&lt;p&gt;安装SQL走了一些弯路，刚开始也想用Homebrew来安装，但是安装完成后无法找到默认的Root密码（5.9之前的版本是没有密码的。），官方的文档上这一块也没有较明确的说明，只是推荐下载dwg包进行安装。所以最后就是用的这个方法，下载安装都很快。并且将MySQL的开关集成在了系统偏好设置里。可能因为我用各种方法装了删、删了又装好多次，最后一遍安装完毕后重启了下电脑才正常启动MySQL服务的。&lt;/p&gt;
+
+&lt;p&gt;默认密码在安装完成后会弹窗提示，也会保留在OS X的通知栏里，建议截图保存并及时修改。&lt;/p&gt;
+
+&lt;p&gt;这里记录一下卸载MySQL的步骤：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo rm /usr/local/mysql
+sudo rm -rf /usr/local/mysql*
+sudo rm -rf /Library/StartupItems/MySQLCOM
+sudo rm -rf /Library/PreferencePanes/My*
+sudo vim /etc/hostconfig and removed the line MYSQLCOM=-YES-
+rm -rf ~/Library/PreferencePanes/My*
+sudo rm -rf /Library/Receipts/mysql*
+sudo rm -rf /Library/Receipts/MySQL*
+sudo rm -rf /var/db/receipts/com.mysql.*
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;mysql-1&quot;&gt;配置MySQL&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;将&lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/local/mysql/bin&lt;/code&gt;添加到环境变量PATH。我使用zsh，所以修改&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.zshrc&lt;/code&gt;文件。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;修改root用户的默认密码。执行下面命令即可，先输入旧密码，再输入两遍新密码。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysqladmin -u root -p password
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;登录mysql。执行下面的命令，输入新密码，成功就表示MySQL配置成功：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysql -u root -p
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后就可以使用Navicat Premium等软件对数据库进行管理了。以后有空的时候再装个phpmyadmin吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;php-1&quot;&gt;配置PHP&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;PHP的配置文件在&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc&lt;/code&gt;目录下，从默认配置拷贝一份：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo cp /etc/php.ini.default /etc/php.ini
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;至于PHP连接mysql的方式（mysql、mysqli、pdo），就根据需求来吧。在&lt;code class=&quot;highlighter-rouge&quot;&gt;php.ini&lt;/code&gt;中开启相应的模块就行。&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Tue, 24 May 2016 18:05:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/05/Mac%E6%90%AD%E5%BB%BAPHP%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/Mac%E6%90%AD%E5%BB%BAPHP%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/</guid>
+        
+        <category>Apache,MySQL,PHP</category>
+        
+        
+      </item>
     
       <item>
         <title>【慕课网笔记】Java高并发秒杀API（三）：Web层</title>
@@ -1128,6 +1339,8 @@ state: -1无效，0成功，1已付款….&lt;/p&gt;
         
         <category>日志</category>
         
+        
+        <category>日志</category>
         
       </item>
     
