@@ -1,10 +1,10 @@
 ---
 layout: post
-title: 【慕课网笔记】Java高并发秒杀API（三）：Web层
+title: 【慕课网】Java高并发秒杀API（三）：Web层
 author: 孟凡泽
 date: 2016-05-23 19:00:40 +0800
-tag: Java
-categories: 
+tag: [Java, Web前端]
+categories: 笔记 @慕课网
 ---
 
 

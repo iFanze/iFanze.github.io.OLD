@@ -1,9 +1,10 @@
 ---
 layout: post
-title: 【慕课网笔记】Java高并发秒杀API（一）：业务分析与DAO层
+title: 【慕课网】Java高并发秒杀API（一）：业务分析与DAO层
 author: 孟凡泽
 date: 2016-05-21 22:05:40 +0800
-tag: Java
+tag: [Java, Web后台]
+categories: 笔记 @慕课网
 ---
 
 注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。

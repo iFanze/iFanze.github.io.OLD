@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>【慕课网】快速入门ThinkPHP框架——理论篇</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8ThinkPHP%E6%A1%86%E6%9E%B6-%E7%90%86%E8%AE%BA%E7%AF%87/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="25 May 2016" class="post-meta__date date">25 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
+    </div>
+    <h1 class="post-title">【慕课网】快速入门ThinkPHP框架——理论篇</h1>
+  </header>
+
+  <section class="post">
+    <p>注：这是慕课网视频“快速入门ThinkPHP框架——理论篇”的笔记。之前做项目用的MVC框架是自己手写的，ThinkPHP也算是PHP框架里比较知名的了，这次体验一下。因为之前已经有MVC的基础了，一天时间就把这个视频刷完了。这里记录的算是CheatSheet吧，供以后查阅。</p>
+
+<h2 id="section">框架是什么</h2>
+
+<p>框架是程序结构代码的集合，而不是业务逻辑代码。
+ThinkPHP：国产、开源、面向对象、MVC、查询语言丰富、详尽的文档、中文注释。</p>
+
+<h2 id="thinkphp">ThinkPHP基础</h2>
+
+<ul>
+  <li>建立简单项目，了解运行流程</li>
+  <li>URL模式，简历自定义函数库</li>
+  <li>模板技术，调试模式和运行状态</li>
+  <li>数据库常用操作</li>
+</ul>
+
+<h2 id="section-1">单一入口框架</h2>
+
+<p>在一个网站中，所有请求都是指向一个脚本文件。使得项目结构规范，控制灵活，更加安全。</p>
+
+<h2 id="section-2">创建项目</h2>
+
+<ul>
+  <li>把下载到的<code class="highlighter-rouge">ThinkPHP</code>目录放在网站根目录，新建<code class="highlighter-rouge">index.php</code>：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+    <span class="nb">define</span><span class="p">(</span><span class="s1">'APP_NAME'</span><span class="p">,</span> <span class="s1">'App'</span><span class="p">);</span>
+    <span class="nb">define</span><span class="p">(</span><span class="s1">'APP_PATH'</span><span class="p">,</span> <span class="s1">'./App/'</span><span class="p">);</span>       <span class="c1">//注意斜线。
+</span>    <span class="k">require</span><span class="p">(</span><span class="s1">'./ThinkPHP/ThinkPHP.php'</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>访问一次。</li>
+</ul>
+
+<h2 id="section-3">目录结构</h2>
+
+<ul>
+  <li>Commom：公共函数</li>
+  <li>Conf：配置文件</li>
+  <li>Lang：语言包</li>
+  <li>Lib：控制器和模型（Action、Behavior、Model、Widget）</li>
+  <li>Runtime：运行时文件（Cache、Data、Logs等）</li>
+  <li>Tpl：模板</li>
+</ul>
+
+<h2 id="section-4">运行流程</h2>
+
+<ul>
+  <li>加载thinkphp.php</li>
+  <li>加载核心文件（<code class="highlighter-rouge">./thinkHP/LBI/core</code>）</li>
+  <li>加载项目的文件，分析URL，调用相关控制器（URL：<code class="highlighter-rouge">/index.php?m=index&amp;a=index</code>，对应<code class="highlighter-rouge">index.class.php</code>中的<code class="highlighter-rouge">index</code>方法）</li>
+</ul>
+
+<h2 id="section-5">配置文件</h2>
+
+<ul>
+  <li>框架的配置文件：<code class="highlighter-rouge">/ThinkPHP/Conf/convertion.php</code></li>
+  <li>项目的配置文件：<code class="highlighter-rouge">/App/Conf/config.php</code>，使用<code class="highlighter-rouge">C("xxx")</code>可访问到配置项，注意在index.php处添加<code class="highlighter-rouge">define('APP_DEBUG', true)</code>，才能使每次访问都读取配置文件。如果要自定义配置文件，如增加<code class="highlighter-rouge">user.php</code>，需要在<code class="highlighter-rouge">config.php</code>中增加<code class="highlighter-rouge">'LOAD_EXT_CONFIG'=&gt;'user'</code>，且无论是否在Debug状态，每次访问都会读取它。</li>
+</ul>
+
+<h2 id="url">URL模式</h2>
+
+<p>在config.php里配置，也可用C(‘URL_MODEL’)访问。</p>
+
+<ul>
+  <li>默认模式：pathinfo模式。<code class="highlighter-rouge">index.php/index/user/id/1.html</code></li>
+  <li>普通模式：0：<code class="highlighter-rouge">index.php?m=Index&amp;a=user&amp;id=1</code></li>
+  <li>重写模式：2：<code class="highlighter-rouge">index/user/id/1.html</code>（需要在apache中配置）</li>
+  <li>兼容模式：3：<code class="highlighter-rouge">index.php?s=/Index/user/id/1.html</code></li>
+</ul>
+
+<p>使用U方法可以构造URL，若第四个参数为true，则会直接跳转到构造出的URL：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>U('模块/方法', array('id'=&gt;1), 'html', false, 'localhost');
+</code></pre>
+</div>
+
+<h3 id="indexphp">重写模式下隐藏<code class="highlighter-rouge">index.php</code></h3>
+
+<ul>
+  <li>开启mod_rewrite.so</li>
+  <li>在根目录创建<code class="highlighter-rouge">.htaccess</code>文件：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;Ifmodule mod_rewrite.c&gt;
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php/$1[QSA,PT,L]
+&lt;/Ifmodule&gt;
+</code></pre>
+</div>
+
+<h3 id="url-1">URL伪静态</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">localhost/muke/Index/user/id/1.html</code>会正确把<code class="highlighter-rouge">id</code>识别为<code class="highlighter-rouge">1</code></li>
+  <li><code class="highlighter-rouge">localhost/muke/Index/user/id/1.shtml</code>会把<code class="highlighter-rouge">id</code>识别为<code class="highlighter-rouge">1.shtml</code></li>
+  <li>需要在配置文件设置：<code class="highlighter-rouge">URL_HTML_SUFFIX</code>即可，有多种格式就用<code class="highlighter-rouge">|</code>隔开。</li>
+  <li>可以让搜索引擎认为这是静态页面，更易被检索到。</li>
+</ul>
+
+<h2 id="section-6">自定义函数库</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">App/Common</code>里建立<code class="highlighter-rouge">Common.php</code>，在其中定义函数进行使用。</li>
+  <li>ThinkPHP自带的dump()函数比var_dump()更好用，可以格式化输出。</li>
+</ul>
+
+<h2 id="section-7">建立项目模板</h2>
+
+<h3 id="section-8">基本用法</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">App/Tpl</code>里建立Action名字的文件夹，如<code class="highlighter-rouge">Index</code>。在其中以function名字建立html页面，如<code class="highlighter-rouge">index.html</code>。</li>
+  <li>在Action中调用<code class="highlighter-rouge">$this-&gt;display()</code>或<code class="highlighter-rouge">$this-&gt;display("Index/index")</code>即可。</li>
+  <li>向模板传参的方式：<code class="highlighter-rouge">$this-&gt;assign("变量名", 变量值);</code>，assign函数可以在一个语句中连续调用。然后在<code class="highlighter-rouge">index.html</code>里直接插入PHP片段即可输出。</li>
+</ul>
+
+<h3 id="section-9">模板引擎介绍</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">ThinkPHP/Lib/Template/ThinkTemplate.class.php</code>中即是ThinkPHP的模板引擎。</li>
+  <li>使用<code class="highlighter-rouge"><span class="p">{</span><span class="err">$me['name']</span><span class="p">}</span></code>或<code class="highlighter-rouge"><span class="p">{</span><span class="err">$me.name</span><span class="p">}</span></code>或<code class="highlighter-rouge"><span class="p">{</span><span class="err">$me.sex|default='man'</span><span class="p">}</span></code>可以在模板中获取值。</li>
+  <li>注意<code class="highlighter-rouge"><span class="p">{</span><span class="err">$me['age']</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="err">1</span><span class="p">}</span></code>不能用<code class="highlighter-rouge"><span class="p">{</span><span class="err">$me.age</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="err">1</span><span class="p">}</span></code>替代。</li>
+</ul>
+
+<h3 id="section-10">模板引擎调用函数和系统参数</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="err">$me['name']|md5|substr=0,5</span><span class="p">}</span><span class="w">    </span><span class="err">//相当于$name=substr(md</span><span class="mi">5</span><span class="err">($me</span><span class="p">[</span><span class="err">'name'</span><span class="p">]</span><span class="err">),</span><span class="mi">0</span><span class="err">,</span><span class="mi">5</span><span class="err">);</span><span class="w">
+</span><span class="p">{</span><span class="err">$now|date=</span><span class="nt">"Y-m-d H:i:s"</span><span class="err">,###}</span><span class="w">   </span><span class="err">//使用###表示占位</span><span class="w">
+</span><span class="p">{</span><span class="err">$Think.now</span><span class="p">}</span><span class="w">                    </span><span class="err">//调用系统参数</span><span class="w">
+</span><span class="p">{</span><span class="err">$Think.version</span><span class="p">}</span><span class="w">
+</span><span class="p">{</span><span class="err">$Think.server.http_host</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="volistforeachfor">循环：volist、foreach、for</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$person = array(
+    1 =&gt; array('name'=&gt;'Jack', 'age'=&gt;18),
+    ...
+);
+
+&lt;volist name='person' id='data' offset='1' length='3' empty='没有数据'&gt;
+{$data['name']} ------- {$data['age']}&lt;br/&gt;
+&lt;/volist&gt;
+
+&lt;foreach name='person' item='data'&gt;
+同上，但是截取方式和volist不同。
+&lt;/foreach&gt;
+
+&lt;for start='1' end='10' comparison='elt' name='k'&gt;
+{$k}&lt;br/&gt;
+&lt;/for&gt;
+
+</code></pre>
+</div>
+
+<ul>
+  <li>eq    neq     gt      egt     lt      elt     heq     nheq</li>
+  <li>=     !=      &gt;       &gt;=      &lt;       &lt;=      ===     !==</li>
+  <li>for循环的默认comparision是lt。</li>
+</ul>
+
+<h3 id="ifswitch">判断：if、switch</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;if condition="$num gt 10"&gt;
+num大于10
+&lt;elseif condition="$num lt 10" /&gt; 
+num小于10
+&lt;else/&gt;
+num等于10
+&lt;/if&gt;
+
+&lt;switch name='num'&gt;
+    &lt;case value='1'&gt;1&lt;/case&gt;
+    &lt;case value='2|3|4'&gt;2|3|4&lt;/case&gt;
+    &lt;default/&gt;other
+&lt;/switch&gt;
+</code></pre>
+</div>
+
+<ul>
+  <li>注意elseif和else要关闭标签。</li>
+</ul>
+
+<h3 id="section-11">比较</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;比较标签 name='变量名' value='比较的值'&gt;
+&lt;/比较标签&gt;
+
+&lt;eq name='num' value='10'&gt;num = 10 &lt;/eq&gt;
+&lt;eq name='num' value='10'&gt;num = 10 &lt;else /&gt; num != 10 &lt;/eq&gt;
+&lt;compare name='num' value='10' type='eq'&gt; num = 10 &lt;/compare&gt;
+</code></pre>
+</div>
+
+<h3 id="section-12">区间</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;in</span> <span class="na">name=</span><span class="s">'num'</span> <span class="na">value=</span><span class="s">'1,2,3'</span><span class="nt">&gt;</span> 在这个区间 <span class="nt">&lt;else</span> <span class="nt">/&gt;</span> 不在这个区间 <span class="nt">&lt;/in&gt;</span>
+<span class="nt">&lt;notin</span> <span class="na">name=</span><span class="s">'num'</span> <span class="na">value=</span><span class="s">'1,2,3'</span><span class="nt">&gt;</span> 不在这个区间 <span class="nt">&lt;else</span> <span class="nt">/&gt;</span> 在这个区间 <span class="nt">&lt;/notin&gt;</span>
+<span class="nt">&lt;between</span> <span class="na">name=</span><span class="s">'num'</span> <span class="na">value=</span><span class="s">'1,10'</span><span class="nt">&gt;</span> 在这个区间 <span class="nt">&lt;/between&gt;</span>
+<span class="nt">&lt;notbetween</span> <span class="na">name=</span><span class="s">'num'</span> <span class="na">value=</span><span class="s">'1,10'</span><span class="nt">&gt;</span> 不在这个区间 <span class="nt">&lt;/between&gt;</span>
+<span class="nt">&lt;range</span> <span class="na">name=</span><span class="s">'num'</span> <span class="na">value=</span><span class="s">'1,11,12'</span> <span class="na">type=</span><span class="s">'in'</span><span class="nt">&gt;</span> 在这个区间 <span class="nt">&lt;/range&gt;</span> 
+</code></pre>
+</div>
+
+<ul>
+  <li>注意：range只能替代in或者notin。</li>
+</ul>
+
+<h3 id="section-13">三元运算符</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="err">$num&gt;11?</span><span class="nt">"大于11"</span><span class="p">:</span><span class="s2">"不大于11"</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="php">原生PHP</h3>
+
+<p>使用<php></php>。</p>
+
+<h2 id="thinkphp-1">ThinkPHP的调试</h2>
+
+<ul>
+  <li>程序入口添加：<code class="highlighter-rouge">define('APP_DEBUG', true);</code></li>
+  <li>创建<code class="highlighter-rouge">App/Conf/debug.php</code>，这个配置文件中的配置在APP_DEBUG打开时会优先于默认配置文件<code class="highlighter-rouge">config.php</code>。</li>
+  <li>在<code class="highlighter-rouge">debug.php</code>中开启页面trace信息：<code class="highlighter-rouge">'SHOW_PAGE_TRACE' =&gt; true</code>。常用的调试手段有：</li>
+</ul>
+
+<ol>
+  <li>使用<code class="highlighter-rouge">$this-&gt;display();</code>显示调试信息。</li>
+  <li>使用<code class="highlighter-rouge">trace(name,C("name"))</code>可以输出到调试界面中。</li>
+  <li>使用<code class="highlighter-rouge">dump()</code>。</li>
+  <li>使用<code class="highlighter-rouge">G('run')</code>和<code class="highlighter-rouge">echo G('run','end')</code>获取此段代码的运行时间。</li>
+</ol>
+
+<h2 id="section-14">数据库</h2>
+
+<h3 id="section-15">连接数据库</h3>
+
+<ul>
+  <li>在<code class="highlighter-rouge">/App/Conf/config.php</code>中定义：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>'DB_TYPE' =&gt; 'mysql',
+'DB_HOST' =&gt; 'localhost',
+'DB_NAME' =&gt; 'muke',
+'DB_USER' =&gt; 'root',
+'DB_PWD' =&gt; 'root',
+'DB_PORT' =&gt; '3306',
+'DB_PREFIX' =&gt; 'mk_',
+
+//还可以加入其它主从数据库：
+'DB_HOST' =&gt; 'localhost,localhost2,localhost3',
+//开启主从读写分离
+'DB_RW_SEPARATE' =&gt; true,
+//多个主数据库服务器（前2个）
+'DB_MASTER_NUM' =&gt; '2',
+</code></pre>
+</div>
+
+<h3 id="section-16">实例化模型</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1.实例化基础模型model
+$user = new Model('user');      //表名、表前缀、数据库连接信息
+$user = M('user');              //同上，简写版
+$data = $user-&gt;select();
+
+//2.实例化用户自定义模型
+//---假设在/App/Lib/Model下建立有UserModel.class.php
+class UserModel extends Model{
+    public function getinfo(){
+        ...
+    }
+}
+//---则：
+$user = new UserModel();
+echo $user-&gt;getinfo();
+//或
+$user = D('User');      //如果找不到用户自定义模型则会与M()相同。
+$data=$user-&gt;select();
+
+//3.实例化公共模型（就是继承的思想）
+//新建CommonModel.class.php：
+class CommonModel extends Model{
+    public function strmake($str){
+        return md5($str);
+    }
+}
+//然后让2中的Model继承自CommonModel。
+
+//4.实例化空模型
+$model = M();
+$model-&gt;query($sql);    //select，返回数据数组
+$model-&gt;execute($sql);  //update, insert，返回受影响行数
+</code></pre>
+</div>
+
+<h3 id="curd">CURD操作</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//add
+$data=array(
+    'user_name' =&gt; 'xxxx',
+    'password'  =&gt; 'xxxx',
+);
+$datas = array(
+    1 =&gt; array(...),
+    2 =&gt; array(...),
+);
+M('User')-&gt;add($data);      //返回主键
+M('User')-&gt;addAll($datas);  //返回第一条的主键，addAll只能用于MySQL，不能用于Oracle
+echo M()-&gt;getLastSql();     //返回最后一次SQL语句
+
+//select
+$data = M('User')-&gt;select();    //调试模式会每次自动执行SHOW columns from `xxx1`。非调试模式会缓存结果到Runtime/Data文件夹。
+
+//1.直接使用字符串进行查找
+$data = M('User')-&gt;where('id=1')-&gt;select();
+
+//2.使用数组方式进行查询
+$where["id"] = 1;
+$where["username"] = "xxx";
+$where["_logic"] = "or";
+$data = M('User')-&gt;where($where)-&gt;select();
+
+//3.表达式查询：array('表达式','查询条件');
+$where["id"] = array('lt', 3);
+$where["id"] = array(array('gt',1), array('lt',10));        //区间查询，默认and
+$where["id"] = array(array('gt',1), array('lt',10), or);
+$where["age"] = array('between', '1,8');
+$where["name"] = array('like', '%ming');
+$where["name"] = array('like', array('%ming', 'xiao%'));
+$data = M('User')-&gt;where($where)-&gt;select();
+
+//4.混合用法
+$where['id'] = array('gt',10);
+$where['_string'] = 'score &gt; 10';
+$data = M('User')-&gt;where($where)-&gt;select();
+
+//5.统计用法：count, max, min, avg, sum，后四种必须传入参数。
+M('User') -&gt; count();
+M('User') -&gt; max('id');
+
+//1和4不推荐，易被SQL注入。
+
+//update
+$update['score'] = 60;
+$where['id'] = 1;
+$data = M('User')-&gt;where($where)-&gt;save($update);    //返回受影响行数
+//其余用法同select
+
+//delete
+M('User')-&gt;where($where)-&gt;delete();         //返回受影响行数
+M('User')-&gt;delete(2);                       //根据主键删除
+</code></pre>
+</div>
+
+<h3 id="section-17">连贯操作</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1. order
+$data = M('User')-&gt;order('score desc, id asc')-&gt;select();
+//2. field，第二个参数默认false，如果是true，则是"除外"的意思
+$data = M('User')-&gt;field('id,username')-&gt;order()-&gt;select();
+//3. limit(length)、limit(start,length)和page(页码，每页条数=20)
+$data = M('User')-&gt;field('id,username')-&gt;order()-&gt;limit(5)-&gt;select();
+$data = M('User')-&gt;field('id,username')-&gt;order()-&gt;limit(1,5)-&gt;select();
+$data = M('User')-&gt;field('id,username')-&gt;order()-&gt;page(1,5)-&gt;select();
+//4. group和having
+$data = M('User')-&gt;field('score,count(*) as total')-&gt;having('score&gt;20')-&gt;group('score')-&gt;select();
+</code></pre>
+</div>
+
+<h3 id="section-18">多表查询</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1. table方法：table(array('表名'=&gt;'别名'))，表名要加前缀。
+$data = M()-&gt;table(array('mk_user' =&gt; 'user', 'mk_userinfo' =&gt; 'info') )-&gt;where('user.id=info.user_id')-&gt;select();
+//2. join方法：支持字符串和数组，默认左关联。字符串的话，可以多个join连接多个表。数组不行。
+$data = M('user')-&gt;join('mk_userinfo On mk_userinfo.user_id=mk_user.id')-&gt;select();
+$data = M('user')-&gt;join('Right join mk_userinfo On mk_userinfo.user_id=mk_user.id')-&gt;select();
+$data = M('user')-&gt;join('innert join mk_userinfo On mk_userinfo.user_id=mk_user.id')-&gt;select();
+$data = M('user')-&gt;join(array('mk_userinfo On mk_userinfo.user_id=mk_user.id'))-&gt;select();
+//3. union查询：union('string/array', true/false)。若为true，则为unionAll查询，不过滤相同的记录。只能union字段相同的两个表。可以多次使用Union。
+$data = M('User')-&gt;field('user_name')-&gt;union('select user_name from mk_user2')-&gt;select();
+$data = M('User')-&gt;field('user_name')-&gt;union(array('field'=&gt;'user_name','table'=&gt;'mk_user2'))-&gt;select();
+</code></pre>
+</div>
+
+<h3 id="section-19">过滤查询</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$data = M('User')-&gt;distinct(true)-&gt;field('score')-&gt;select();
+</code></pre>
+</div>
+
+<h3 id="section-20">命名范围的使用</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>class UserModel extends CommonModel{
+    protected $_scope = array(
+        "命名范围的标识名" =&gt; array(
+            "属性" =&gt; "值",    //where limit field order table page having group distinct
+        ), 
+    );
+}
+
+调用：
+$user = D('User);
+$data = $user-&gt;scope('命名范围的标识名')-&gt;select(); //可以使用多个标识名，用逗号隔开，若有冲突，会取用后面一个。可以在scope后再添加其它限制，但是若存在冲突，还是会取后面一个。
+</code></pre>
+</div>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>

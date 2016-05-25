@@ -1,9 +1,10 @@
 ---
 layout: post
-title: 【慕课网笔记】Java高并发秒杀API（二）：Service层
+title: 【慕课网】Java高并发秒杀API（二）：Service层
 author: 孟凡泽
 date: 2016-05-21 23:05:40 +0800
-tag: Java
+tag: [Java, Web后台]
+categories: 笔记 @慕课网
 ---
 
 注：续前文。

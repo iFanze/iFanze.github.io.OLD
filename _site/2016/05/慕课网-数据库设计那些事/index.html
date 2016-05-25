@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>【慕课网】数据库设计那些事</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E9%82%A3%E4%BA%9B%E4%BA%8B/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="22 May 2016" class="post-meta__date date">22 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#数据库">数据库</a> </span>
+    </div>
+    <h1 class="post-title">【慕课网】数据库设计那些事</h1>
+  </header>
+
+  <section class="post">
+    <p>注：这是看了慕课网上一个视频的笔记。是比较基础的数据库相关的知识，比如范式，并且还对数据库设计时需要注意的问题和一些经验性的内容做了分享。原视频链接：<a href="http://www.imooc.com/learn/117">http://www.imooc.com/learn/117</a></p>
+
+<h2 id="section">为什么要进行数据库设计</h2>
+
+<ul>
+  <li>减少数据冗余</li>
+  <li>避免数据维护异常</li>
+  <li>节约存储空间</li>
+  <li>高效访问</li>
+</ul>
+
+<h2 id="section-1">数据库设计步骤</h2>
+
+<ul>
+  <li>需求分析：数据是什么、有哪些属性、数据和属性有哪些特点</li>
+  <li>逻辑设计：用ER图逻辑建模</li>
+  <li>物理设计：根据数据库自身的特点</li>
+  <li>维护优化：新的需求进行建表、索引优化、大表拆分</li>
+</ul>
+
+<h2 id="section-2">需求分析</h2>
+
+<h3 id="section-3">作用</h3>
+
+<ul>
+  <li>了解系统中所要存储的数据</li>
+  <li>了解数据的存储特点（时效性：过期清理；日志：不适合放在数据库中，或者注意定制清理规则。分库分表？归档？）</li>
+  <li>了解数据的生命周期</li>
+</ul>
+
+<h3 id="section-4">搞清楚一些问题</h3>
+
+<ul>
+  <li>实体及实体间的关系（1对1，1对多，多对多）</li>
+  <li>实体的属性有什么？</li>
+  <li>唯一标识实体的属性或属性组合？</li>
+</ul>
+
+<h3 id="section-5">举例：电商网站</h3>
+
+<p>用户模块、商品模块、订单模块、购物车模块、供应商模块</p>
+
+<h4 id="section-6">用户模块</h4>
+
+<p>用户名、密码、电话、邮箱、身份证号、地址、姓名、昵称……</p>
+
+<p>存储特点：组件增加，要永久存储</p>
+
+<h4 id="section-7">商品模块</h4>
+
+<p>商品编码、商品名称、描述、品类、供应商名称、重量、有效期、价格……</p>
+
+<p>存储特点：对于下线商品可以归档存储</p>
+
+<h4 id="section-8">订单模块</h4>
+
+<p>订单号、用户姓名、电话、收货地址、商品编号、商品名称、数量、价格、订单状态、订单类型……</p>
+
+<p>存储特点：永久存储（分表、分库存储）</p>
+
+<h4 id="section-9">购物车模块</h4>
+
+<p>存储特点：不用永久存储（设置归档、清理规则）</p>
+
+<h4 id="section-10">供应商模块</h4>
+
+<p>存储特点：永久存储</p>
+
+<p><img src="/images/posts/14639346317272.jpg" alt="" /></p>
+
+<h2 id="section-11">逻辑设计</h2>
+
+<h3 id="section-12">简介</h3>
+
+<ul>
+  <li>将需求转化为数据库的逻辑模型</li>
+  <li>用ER图进行展示</li>
+  <li>与所选用的具体DBMS无关</li>
+</ul>
+
+<h3 id="section-13">名词</h3>
+
+<p>关系、元组、属性、候选码、主码、域、分量</p>
+
+<h3 id="er">ER图例</h3>
+
+<p>实体、联系、属性、连接线</p>
+
+<h3 id="nf">设计范式（NF）</h3>
+
+<p>第一范式、第二范式、第三范式及BC范式，另还有第四、第五范式。</p>
+
+<h4 id="section-14">操作异常</h4>
+
+<ul>
+  <li>插入异常</li>
+  <li>更新异常</li>
+  <li>删除异常</li>
+</ul>
+
+<h4 id="section-15">数据冗余</h4>
+
+<p>相同的数据在多个地方存在，或者某个列由其它列计算得到。</p>
+
+<h4 id="section-16">第一范式</h4>
+
+<p>定义：数据库表中的所有字段都是单一属性，不可再分的。即表都是二维表。</p>
+
+<p>单一属性是由基本的数据类型所构成。</p>
+
+<h4 id="section-17">第二范式</h4>
+
+<p>定义：数据库表中不存在非关键字段对任一候选关键字段的部分函数依赖。</p>
+
+<p>部分函数依赖：存在组合关键字中的某一关键字决定非关键字的情况。</p>
+
+<p>所有单关键字段的表都符合第二范式。</p>
+
+<p>不符合第二范式的例子：
+<img src="/images/posts/14639346577960.jpg" alt="" /></p>
+
+<p>因为存在部分函数依赖：
+(商品名称) -&gt; (价格，描述，重量，有效期)
+(供应商名称) -&gt; (供应商电话)</p>
+
+<p>存在的问题：插入异常、删除异常、更新异常、数据冗余。</p>
+
+<p>解决方式：
+<img src="/images/posts/14639346749155.jpg" alt="" /></p>
+
+<h4 id="section-18">第三范式</h4>
+
+<p>定义：如果数据表中不存在非关键字段，对任意候选关键字段的传递函数依赖，则符合第三范式。</p>
+
+<p>实例：
+<img src="/images/posts/14639346844892.jpg" alt="" /></p>
+
+<p>(商品名称) -&gt; (分类) -&gt; (分类描述)</p>
+
+<p>存在问题：数据冗余、插入异常、更新异常、删除异常。</p>
+
+<p>解决：
+<img src="/images/posts/14639346929465.jpg" alt="" /></p>
+
+<h4 id="bc">BC范式</h4>
+
+<p>定义：Boyce.Codd范式，数据库表中如果不存在任何字段对任一候选关键字段的传递函数依赖则符合BCNF。</p>
+
+<p>实例：
+<img src="/images/posts/14639347213896.jpg" alt="" /></p>
+
+<p>假定：供应商:供应商联系人 = 1:多，供应商:商品 = 1:多</p>
+
+<p>(供应商，商品ID) -&gt; (联系人，商品数量)
+(联系人，商品ID) -&gt;（供应商，商品数量）</p>
+
+<p>存在：</p>
+
+<p>(供应商) -&gt; (供应商联系人)
+(供应商联系人) -&gt; (供应商)</p>
+
+<p>所以不符合BCNF。</p>
+
+<p>解决：
+<img src="/images/posts/14639347354230.jpg" alt="" /></p>
+
+<blockquote>
+  <p>此处存疑，知乎上的讨论更好一些：<a href="https://www.zhihu.com/question/24696366">https://www.zhihu.com/question/24696366</a></p>
+</blockquote>
+
+<h2 id="section-19">物理设计</h2>
+
+<ul>
+  <li>选择合适的DBMS</li>
+  <li>定义数据库、表、字段的命名规范</li>
+  <li>选择合适的字段类型</li>
+  <li>反范式化设计（用空间换取时间）</li>
+</ul>
+
+<h3 id="dbms">常见DBMS系统</h3>
+
+<p>商业数据库：Oracle、SQLServer（企业级项目）
+开源数据库：MySQL、PgSQL（互联网项目）</p>
+
+<p>对事务操作要求较高：Oracle</p>
+
+<h3 id="mysql">MySQL常用数据引擎</h3>
+
+<p><img src="/images/posts/14639347733735.jpg" alt="" /></p>
+
+<h3 id="section-20">表和字段命名规则</h3>
+
+<ul>
+  <li>可读性原则</li>
+  <li>表意性原则</li>
+  <li>长名原则</li>
+</ul>
+
+<h3 id="section-21">字段类型选择原则</h3>
+
+<ul>
+  <li>数字类型 &gt; 日期/二进制 &gt; 字符类型（优先空间小的类型）</li>
+  <li>如：birthday: Int &gt; Datetime &gt; Char(10) &gt; varchar(20)</li>
+  <li>MySQL的TIMESTAMP只能存到2037年</li>
+</ul>
+
+<p><img src="/images/posts/14639347821112.jpg" alt="" /></p>
+
+<p>从两个角度考虑：</p>
+
+<ul>
+  <li>进行数据比较操作时（查询、Join、排序等）：字符处理比数字慢</li>
+  <li>数据处理以页为单位，列长度越小，利于性能提升</li>
+</ul>
+
+<p>char与varchar：</p>
+
+<ul>
+  <li>若列中存储的数据长度差不多是一致的，用char</li>
+  <li>最大数据长度小于50字节，也考虑用char</li>
+  <li>不宜定义大于50字节的char类型</li>
+  <li>注意UTF8每个汉字占3个字节</li>
+</ul>
+
+<p>decimal与float：</p>
+
+<ul>
+  <li>decimal存储精确数据</li>
+  <li>float存储空间开销更小</li>
+</ul>
+
+<p>时间类型如何存储</p>
+
+<ul>
+  <li>使用int：长度比datetime小，使用不方便，要转换，只能存到2038-1-19 11:14:07</li>
+  <li>根据需要存储的时间粒度选择</li>
+</ul>
+
+<h3 id="section-22">其它</h3>
+
+<h4 id="section-23">如何选择主键</h4>
+
+<ul>
+  <li>区分业务主键和数据库主键，前者用于标识，后者是为了优化数据存储</li>
+  <li>考虑是否要顺序增长</li>
+  <li>主键所占空间要尽可能小（使用聚集索引的表，每个索引后会附加主键信息）</li>
+</ul>
+
+<h4 id="section-24">避免使用外键约束</h4>
+
+<ul>
+  <li>降低数据导入效率</li>
+  <li>增加维护成本</li>
+  <li>虽不建议，但相关联的列上一定要建立索引</li>
+</ul>
+
+<h4 id="section-25">避免使用触发器</h4>
+
+<ul>
+  <li>降低数据导入的效率</li>
+  <li>可能会出现意想不到的数据异常</li>
+  <li>使业务逻辑变复杂</li>
+</ul>
+
+<h4 id="section-26">预留字段</h4>
+
+<ul>
+  <li>无法准确知道预留字段的类型</li>
+  <li>无法准确知道预留字段的内容</li>
+  <li>后期维护预留字段的成本同增加一个字段的成本相同</li>
+  <li>严禁使用预留字段！</li>
+</ul>
+
+<h3 id="section-27">反范式化表设计</h3>
+
+<ul>
+  <li>用空间换时间</li>
+  <li>对第三范式进行违反</li>
+  <li>一定要适度</li>
+</ul>
+
+<h2 id="section-28">维护和优化</h2>
+
+<ul>
+  <li>维护数据字典</li>
+  <li>维护索引</li>
+  <li>维护表结构</li>
+  <li>在适当的时候对表进行水平拆分或垂直拆分</li>
+</ul>
+
+<h3 id="section-29">维护数据字典</h3>
+
+<ul>
+  <li>使用第三方工具</li>
+  <li>使用备注字段，可以用select语句导出</li>
+</ul>
+
+<h3 id="section-30">维护索引</h3>
+
+<ul>
+  <li>出现在Where、group by、order by从句中的列</li>
+  <li>可选择性高的列要放到索引的前面</li>
+  <li>索引中不要包括太长的数据类型</li>
+  <li>并不是越多越好，过多的索引对读写都不好</li>
+  <li>定期维护索引碎片</li>
+  <li>在SQL语句中不要使用强制索引关键字</li>
+</ul>
+
+<h3 id="section-31">维护表结构</h3>
+
+<ul>
+  <li>使用在线变更表结构的工具</li>
+  <li>同时对数据字典进行维护</li>
+  <li>控制表的宽度和大小</li>
+</ul>
+
+<h3 id="section-32">数据库中适合的操作</h3>
+
+<ul>
+  <li>批量操作比逐条操作好</li>
+  <li>禁止使用select *</li>
+  <li>控制使用自定义函数</li>
+  <li>不要使用全文索引</li>
+</ul>
+
+<h3 id="section-33">表的拆分</h3>
+
+<h4 id="section-34">垂直拆分：</h4>
+
+<ul>
+  <li>经常一起查询的列放一起</li>
+  <li>text,blob等大字段拆分到附加表中</li>
+</ul>
+
+<h4 id="section-35">水平拆分：</h4>
+
+<ul>
+  <li>为了控制表的大小。</li>
+  <li>常用方式：主键Hash</li>
+</ul>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>

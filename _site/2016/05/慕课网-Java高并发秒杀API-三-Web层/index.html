@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>【慕课网】Java高并发秒杀API（三）：Web层</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%89-Web%E5%B1%82/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="23 May 2016" class="post-meta__date date">23 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#Java">Java</a> <a href="/tags/#Web前端">Web前端</a> </span>
+    </div>
+    <h1 class="post-title">【慕课网】Java高并发秒杀API（三）：Web层</h1>
+  </header>
+
+  <section class="post">
+    <p>注：续前文。本篇主要是Web层的开发，主要是使用Bootstrap进行页面的简单布置和用Javascript书写前端的交互逻辑。其中有很多细节值得我学习，比如Javascript代码的模块化。</p>
+
+<p>看完这部视频后更加觉得，这个项目必须要自己做一遍。我打算趁着这几天比较闲，按照视频中的思路，将这个秒杀系统用PHP实现出来，因为自己太久没有用PHP写项目了，借此也可以学一些PHP中的MVC等框架，就像视频中使用的Java的SpringMVC那样。</p>
+
+<h3 id="section">目录：</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>main
+--resources
+    --mapper
+        SeckillDao.xml
+        SuccessKilledDao.xml
+    --spring
+        spring-dao.xml
+        spring-service.xml
+        spring-web.xml
+    mybatis-config.xml
+--webapp
+    --resources
+    --WEB-INF
+        web.xml
+    index.jsp
+--java
+    --org.seckill
+        --dao
+        --entity
+        --service
+            --impl
+                SeckillServiceImpl
+            SeckillService
+        --exception
+        --dto           数据传输层
+        --enums
+            SeckillStateEnum
+        --web
+            SeckillController
+--sql
+
+test
+--java
+--resources
+</code></pre>
+</div>
+
+<h2 id="restful">设计Restful接口</h2>
+
+<h3 id="section-1">前端交互流程设计</h3>
+
+<h3 id="restful-1">学习Restful接口设计</h3>
+
+<p>兴起于：Ruby on Rails，一种优雅的URI表述方式，是一种资源的状态和状态的转移。</p>
+
+<p>GET /seckill/list
+POST /seckill/{id}/execution
+DELETE /seckill/{id}/delete</p>
+
+<p>GET：查询
+POST：添加/修改(非逆等)
+PUT：修改
+DELETE：删除</p>
+
+<p>URL设计：/模块/资源/{标示}/集合1/…</p>
+
+<p>实例：秒杀URL设计：
+GET /seckill/list &gt; 秒杀列表
+GET /seckill/{id}/detail &gt; 详情页
+GET /seckill/time/now &gt; 系统时间
+POST /seckill/{id}/exposer &gt; 暴露秒杀
+POST /seckill/{id}/{md5}/execution &gt; 执行秒杀</p>
+
+<h2 id="springmvcspring">SpringMVC集合spring</h2>
+
+<h3 id="springmvc">使用SpringMVC理论</h3>
+
+<p>围绕Handler开发：Handler产出Model和View。</p>
+
+<h4 id="sprintmvc">SprintMVC运行流程</h4>
+
+<h4 id="http">HTTP请求地址映射原理</h4>
+
+<p>使用注解：@RequestMapping。</p>
+
+<h4 id="section-2">请求方法细节处理</h4>
+
+<ul>
+  <li>请求参数绑定</li>
+  <li>请求方式限制</li>
+  <li>请求转发和重定向</li>
+  <li>数据模型赋值</li>
+  <li>返回Json数据</li>
+  <li>cookie访问</li>
+</ul>
+
+<p><img src="/images/posts/14640003766491.jpg" alt="" /></p>
+
+<h3 id="springmvc-1">整合配置SpringMVC框架</h3>
+
+<ul>
+  <li>配置DispatcherServlet：配置SpringMVC需要加载的配置文件：spring-dao.xml、spring-service.xml、spring-web.xml。</li>
+  <li>配置spring-web.xml：配置SpringMVC：
+    <ul>
+      <li>开启SpringMVC注解模式。（简化配置：自动注册DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter；提供一系列功能：数据绑定、数字和日期的转换@NumberFormat、@DateTimeFormat，xml和json默认读写支持。）</li>
+      <li>静态资源默认servlet配置（加入对静态资源的处理：js/git/png…，允许使用”/”做整体映射）</li>
+      <li>配置jsp显示ViewResolver.</li>
+      <li>扫描web相关的bean。</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="restful-2">实现Restful接口</h2>
+
+<ul>
+  <li>新建SeckillController。</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@Controller</span> <span class="c1">//类似于@Service @Component，目的是放入spring容器</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/seckill"</span><span class="o">)</span> <span class="c1">//url:/模块/资源/{id}/细分  </span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SeckillController</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Logger</span> <span class="n">logger</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="n">SeckillService</span> <span class="n">seckillService</span><span class="o">;</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"/list"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="n">list</span><span class="o">(</span><span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+        <span class="c1">//获取列表页</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Seckill</span><span class="o">&gt;</span> <span class="n">list</span> <span class="o">=</span> <span class="n">seckillService</span><span class="o">.</span><span class="na">getSeckillList</span><span class="o">();</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"list"</span><span class="o">,</span> <span class="n">list</span><span class="o">);</span>
+        <span class="c1">//list.jsp + model = ModelAndView</span>
+        <span class="k">return</span> <span class="s">"list"</span><span class="o">;</span>  <span class="c1">// /WEB-INF/jsp/"list".jsp</span>
+    <span class="o">}</span>
+    
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/{seckillId}/detail"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="n">detail</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">"seckillId"</span><span class="o">)</span> <span class="n">Long</span> <span class="n">seckillId</span><span class="o">,</span> <span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">seckillId</span> <span class="o">==</span> <span class="kc">null</span><span class="o">){</span>
+            <span class="k">return</span> <span class="s">"redirect:/seckill/list"</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">Seckill</span> <span class="n">seckill</span> <span class="o">=</span> <span class="n">seckillService</span><span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">seckillId</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">sekill</span> <span class="o">==</span> <span class="kc">null</span><span class="o">){</span>
+            <span class="k">return</span> <span class="s">"forward:/seckill/list"</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"seckill"</span><span class="o">,</span> <span class="n">seckill</span><span class="o">);</span>
+        <span class="k">return</span> <span class="s">"detail"</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="c1">//ajax json</span>
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/{seckillId}/exposer"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">produces</span> <span class="o">=</span> <span class="o">{</span><span class="s">"application/json;charset=UTF-8"</span><span class="o">})</span>
+    <span class="nd">@ResponsBody</span>
+    <span class="kd">public</span> <span class="n">SeckillResult</span><span class="o">&lt;</span><span class="n">Exposer</span><span class="o">&gt;</span> <span class="n">exposer</span><span class="o">(</span><span class="n">Long</span> <span class="n">seckillId</span><span class="o">){</span>
+        <span class="n">SeckillResult</span><span class="o">&lt;</span><span class="n">Exposer</span><span class="o">&gt;</span> <span class="n">result</span><span class="o">;</span>
+        <span class="n">Exposer</span> <span class="n">exposer</span> <span class="o">=</span> <span class="n">seckillService</span><span class="o">.</span><span class="na">exportSeckillUrl</span><span class="o">(</span><span class="n">seckillId</span><span class="o">);</span>
+        <span class="c1">//给result赋值，使用try catch</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/{seckillId}/{md5}/execution"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">produces</span> <span class="o">=</span> <span class="o">{</span><span class="s">"application/json;charset=UTF-8"</span><span class="o">})</span>
+    <span class="nd">@ResponsBody</span>
+    <span class="kd">public</span> <span class="n">SeckillResult</span><span class="o">&lt;</span><span class="n">SeckillException</span><span class="o">&gt;</span> <span class="n">execute</span><span class="o">(.....){</span> <span class="c1">//这里参数killPhone使用cookie</span>
+    
+    <span class="o">}</span>
+    
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/time/now"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">SeckillResult</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">time</span><span class="o">(){</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>创建class SeckillResult<t>，包括boolean success、T data、String error，用于封装json结果，返回ajax结果。</t></li>
+</ul>
+
+<h2 id="bootstrap">基于bootstrap开发页面结构</h2>
+
+<ul>
+  <li>WEB-INFO/jsp下建立页面：detail.jsp、list.jsp。建立文件夹common放置公共的head.jsp，包括所有的<link />标签。</li>
+  <li>尽量使用CDN托管js库！！！</li>
+  <li>使用了JQuery cookie和JQuery countDown插件。</li>
+  <li>要用<script></script>，而不是<script></script>。</li>
+</ul>
+
+<h2 id="cookie">Cookie登录交互、计时交互、秒杀交互</h2>
+
+<ul>
+  <li>javascript做到模块化，模拟包：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="kd">var</span> <span class="nx">seckill</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1">//封装秒杀相关ajax的url</span>
+        <span class="nx">URL</span> <span class="err">：</span> <span class="p">{</span>
+            <span class="nl">now</span><span class="p">:</span> <span class="kd">function</span><span class="p">(){</span>
+                <span class="k">return</span> <span class="s2">"/seckill/time/now"</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="c1">//验证手机号</span>
+        <span class="nx">validatePhone</span><span class="err">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">phone</span><span class="p">){</span>
+        
+        <span class="p">},</span>
+        <span class="c1">//时间判断，为了减少detail代码和代码复用。</span>
+        <span class="nx">countdown</span><span class="err">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">seckillId</span><span class="p">,</span> <span class="nx">nowTime</span><span class="p">,</span> <span class="nx">startTime</span><span class="p">,</span> <span class="nx">endTime</span><span class="p">){</span>
+        
+        <span class="p">},</span>
+        <span class="c1">//获取秒杀地址，控制显示逻辑，执行秒杀</span>
+        <span class="nx">handleSeckillKill</span><span class="err">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">seckillId</span><span class="p">,</span> <span class="nx">node</span><span class="p">){</span>
+        
+        <span class="p">},</span>
+        <span class="c1">//详情页秒杀逻辑</span>
+        <span class="nx">detail</span><span class="err">:</span> <span class="p">{</span>
+            <span class="c1">//详情页初始化</span>
+            <span class="nl">init</span> <span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">params</span><span class="p">){</span>
+                <span class="c1">//手机验证和登录，计时交互</span>
+                <span class="c1">//规范我们的交互流程：params包括seckillId、startTime、endTime</span>
+                <span class="c1">//在cookie中查找手机号（因为这里没有用到相关登录的后端，使用cookie替代）</span>
+                <span class="c1">//验证手机，提出一个独立的方法validatePhone</span>
+                
+                <span class="c1">//已经登录</span>
+                <span class="c1">//计时交互</span>
+                <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">seckill</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">now</span><span class="p">(),</span> <span class="p">{},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">result</span> <span class="o">&amp;&amp;</span> <span class="nx">result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]){</span>
+                        <span class="c1">//时间判断</span>
+                        <span class="nx">countdown</span><span class="p">(....);</span>
+                    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+                        
+                    <span class="p">}</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="web">web层课程总结</h2>
+
+<ul>
+  <li>技术回顾：前端交互设计过程、Restful接口设计、SpringMVC使用技巧、Bootstrap和JS的使用</li>
+  <li>前端交互设计（前端、产品、后端）：</li>
+</ul>
+
+<p><img src="/images/posts/14640003907843.jpg" alt="" /></p>
+
+<ul>
+  <li>SpringMVC：配置和运行流程、DTO传递数据、注解映射驱动。</li>
+  <li>SpringMVC运行流程：</li>
+</ul>
+
+<p><img src="/images/posts/14640003986865.jpg" alt="" /></p>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>
