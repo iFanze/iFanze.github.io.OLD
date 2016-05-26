@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Laravel v5.2 框架学习笔记</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="27 May 2016" class="post-meta__date date">27 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
+    </div>
+    <h1 class="post-title">Laravel v5.2 框架学习笔记</h1>
+  </header>
+
+  <section class="post">
+    <p>注：写完上一篇ThinkPHP框架，再写一篇Laravel框架的学习笔记感觉好怪异。主要是因为在知乎上看到了一些PHP框架相关的讨论，有很多人力推Laravel，又说ThinkPHP哪里怎么怎么不合理，代码质量一般，风格糟糕等等……然后就打开Laravel官网看了一眼，仅仅是打开看了一眼，我就决定抛弃掉ThinkPHP转投看着很高大上的Laravel了！！</p>
+
+<p>注2：新开一段理智下来，Laravel更显专业、成熟，学着更具挑战性，我还可能会从其优秀的代码风格中受益，框架自身也足够稳定。当然也不是说ThinkPHP就不好，或许用来写一般的应用同样简洁高效，并且是国产基因，有中文文档，这些都是他的优点。</p>
+
+<p>注3：这里记录下官方文档里最基础的几篇，可以快速入门，了解基本运行流程并新建一个涉及简单数据库读写的站点。</p>
+
+<h2 id="section">安装</h2>
+
+<p>需要使用Composer，这个在上次装ThinkPHP的时候已经装了。不使用国内的镜像的话安装速度会很慢。
+- 使用Laravel installer：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>composer global require <span class="s2">"laravel/install"</span>   <span class="c"># laravel会被安装到：~/.composer/verdor/bin，把它加入PATH</span>
+laravel new blog    <span class="c"># 创建一个项目，目录名称为blog</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>使用composer create-project：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>composer create-project --prefer-dist laravel/laravel blog
+</code></pre>
+</div>
+
+<h2 id="section-1">配置</h2>
+
+<ul>
+  <li>配置文件位于<code class="highlighter-rouge">config</code>目录。</li>
+  <li>可能要配置Web服务器对<code class="highlighter-rouge">storage</code>和<code class="highlighter-rouge">bootstrap/cache</code>目录的访问权限。</li>
+  <li>在<code class="highlighter-rouge">.env</code>里设置32字符长的Application Kye。</li>
+</ul>
+
+<h3 id="section-2">配置的访问</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$value = config('app.timezone');                //可以再设置默认值
+config(['app.timezone' =&gt; 'America/Chicago']);  //运行时更改设置
+</code></pre>
+</div>
+
+<h3 id="section-3">环境配置</h3>
+
+<ul>
+  <li>在<code class="highlighter-rouge">.env</code>中配置环境信息，其中<code class="highlighter-rouge">APP_ENV</code>即是环境名。</li>
+  <li>配置会读取到<code class="highlighter-rouge">$_ENV</code>里，可以用<code class="highlighter-rouge">env('APP_DEBUG', false)</code>的形式读取。第二个参数是默认值。</li>
+  <li>这个文件不要使用版本控制，而应该添加<code class="highlighter-rouge">.env.example</code>。</li>
+  <li>可以在代码中这样进行判断当前的环境：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$environment = App::environment();
+//或者
+if(App::environment('local', 'staging')){
+    // 环境是local或者staging
+}
+//或者
+$environment = app()-&gt;environment();
+</code></pre>
+</div>
+
+<ul>
+  <li>为了提升性能，在生产环境中定期运行<code class="highlighter-rouge">php artisan config:cache</code>命令将配置文件转成单个文件，在开发环境中不用。</li>
+  <li>开启Maintenance Mode，可以对所有请求展示一个自定义视图，默认是<code class="highlighter-rouge">resources/views/errors/503.blade.php</code>。应在系统维护期使用。（<a href="https://laravel.com/docs/5.2/configuration#maintenance-mode">更多：关于队列任务和zero-downtime发布的实现</a>）开启和关闭的指令分别是：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>php artisan down
+php artisan up
+</code></pre>
+</div>
+
+<h2 id="homestead">Homestead</h2>
+
+<p>一个开发用的虚拟机，感觉很厉害的样子。<a href="https://laravel.com/docs/5.2/homestead">更多相关</a></p>
+
+<h2 id="valet">Valet</h2>
+
+<p>一个Mac上开发用的虚拟机，好像比上面一个还好用。<a href="https://laravel.com/docs/5.2/valet">更多相关</a></p>
+
+<h2 id="basic-task-list">教程：Basic Task List</h2>
+
+<h3 id="section-4">新建工程</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>composer create-project laravel/laravel quickstart --prefer-dist
+<span class="c"># 或</span>
+laravel new quickstart
+</code></pre>
+</div>
+
+<h3 id="section-5">克隆成品(可选)</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>git clone https://github.com/laravel/quickstart-basic quickstart
+<span class="nb">cd </span>quickstart
+composer install
+php artisan migrate
+</code></pre>
+</div>
+
+<h3 id="section-6">准备数据库</h3>
+
+<h4 id="database-migrations">Database Migrations</h4>
+
+<ul>
+  <li>使用数据库Migrations来定义数据库的结构和编辑。</li>
+  <li>使用一下命令生成一个新的数据库Migration：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>php artisan make:migration create_tasks_table --create<span class="o">=</span>tasks
+</code></pre>
+</div>
+
+<ul>
+  <li>打开生成在<code class="highlighter-rouge">database/migrations</code>下的文件，增加一个string列：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>public function up()
+{
+   Schema::create('tasks', function (Blueprint $table) {
+       $table-&gt;increments('id');
+       $table-&gt;string('name');
+       $table-&gt;timestamps();
+   });
+}
+</code></pre>
+</div>
+
+<ul>
+  <li>执行migrate：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>php artisan migrate
+</code></pre>
+</div>
+
+<h4 id="eloquent">Eloquent模型</h4>
+
+<p>这是Laravel默认的ORM(Object-relation mapper)。</p>
+
+<ul>
+  <li>使用以下命令为我们刚刚建立在<code class="highlighter-rouge">tasks</code>数据库中的<code class="highlighter-rouge">Task</code>模型进行模型生成，生成的<code class="highlighter-rouge">Task.php</code>位于<code class="highlighter-rouge">app</code>目录下：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>php artisan make:model Task
+</code></pre>
+</div>
+
+<h3 id="section-7">路由</h3>
+
+<ul>
+  <li>默认全部定义在<code class="highlighter-rouge">app/Http/routes.php</code>中。</li>
+  <li>这里我们需要三种路由：查看任务列表、添加任务、删除任务。</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>use App\Task;
+use Illuminate\Http\Request;
+
+Route::get('/', function () {
+    return view('tasks');   //位于resources/views/tasks.blade.php
+});
+
+Route::post('/task', function (Request $request) {
+    //
+});
+
+Route::delete('/task/{task}', function (Task $task) {
+    //
+});
+</code></pre>
+</div>
+
+<h3 id="section-8">布局和视图</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">.blade.php</code>代表使用Blade模板引擎。</li>
+  <li>建立模板页<code class="highlighter-rouge">resources/views/layouts/app.blade.php</code>：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;head&gt;</span>
+        <span class="nt">&lt;title&gt;</span>Laravel Quickstart - Basic<span class="nt">&lt;/title&gt;</span>
+
+        <span class="c">&lt;!-- CSS And JavaScript --&gt;</span>
+    <span class="nt">&lt;/head&gt;</span>
+
+    <span class="nt">&lt;body&gt;</span>
+        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"container"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;nav</span> <span class="na">class=</span><span class="s">"navbar navbar-default"</span><span class="nt">&gt;</span>
+                <span class="c">&lt;!-- Navbar Contents --&gt;</span>
+            <span class="nt">&lt;/nav&gt;</span>
+        <span class="nt">&lt;/div&gt;</span>
+
+        @yield('content')
+    <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>建立视图页<code class="highlighter-rouge">tasks.blade.php</code>页：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@extends('layouts.app')
+
+@section('content')
+
+    <span class="c">&lt;!-- Bootstrap Boilerplate... --&gt;</span>
+
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel-body"</span><span class="nt">&gt;</span>
+        <span class="c">&lt;!-- Display Validation Errors --&gt;</span>
+        @include('common.errors')
+
+        <span class="c">&lt;!-- New Task Form --&gt;</span>
+        <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">""</span> <span class="na">method=</span><span class="s">"POST"</span> <span class="na">class=</span><span class="s">"form-horizontal"</span><span class="nt">&gt;</span>
+            
+
+            <span class="c">&lt;!-- Task Name --&gt;</span>
+            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group"</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"task"</span> <span class="na">class=</span><span class="s">"col-sm-3 control-label"</span><span class="nt">&gt;</span>Task<span class="nt">&lt;/label&gt;</span>
+
+                <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-6"</span><span class="nt">&gt;</span>
+                    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"name"</span> <span class="na">id=</span><span class="s">"task-name"</span> <span class="na">class=</span><span class="s">"form-control"</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;/div&gt;</span>
+            <span class="nt">&lt;/div&gt;</span>
+
+            <span class="c">&lt;!-- Add Task Button --&gt;</span>
+            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group"</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-offset-3 col-sm-6"</span><span class="nt">&gt;</span>
+                    <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">class=</span><span class="s">"btn btn-default"</span><span class="nt">&gt;</span>
+                        <span class="nt">&lt;i</span> <span class="na">class=</span><span class="s">"fa fa-plus"</span><span class="nt">&gt;&lt;/i&gt;</span> Add Task
+                    <span class="nt">&lt;/button&gt;</span>
+                <span class="nt">&lt;/div&gt;</span>
+            <span class="nt">&lt;/div&gt;</span>
+        <span class="nt">&lt;/form&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+
+    <span class="c">&lt;!-- TODO: Current Tasks --&gt;</span>
+@endsection
+</code></pre>
+</div>
+
+<h3 id="section-9">添加任务</h3>
+
+<h4 id="section-10">表单验证</h4>
+
+<ul>
+  <li>完成<code class="highlighter-rouge">Route::post</code>函数：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Route::post('/task', function (Request $request) {
+    $validator = Validator::make($request-&gt;all(), [
+        'name' =&gt; 'required|max:255',
+    ]);
+
+    if ($validator-&gt;fails()) {
+        return redirect('/')
+            -&gt;withInput()
+            -&gt;withErrors($validator);
+    }
+
+    // Create The Task...
+});
+</code></pre>
+</div>
+
+<ul>
+  <li>注意，错误的输入和错误信息会在重定向到<code class="highlighter-rouge">/</code>后放入到session，这样就可以保持用户的输入状态。</li>
+  <li><code class="highlighter-rouge">withErrors($validator)</code>函数使得我们可以在view中通过<code class="highlighter-rouge">$errors</code>访问出错信息。<code class="highlighter-rouge">common.errors</code>被包含在了我们之前写的<code class="highlighter-rouge">tasks.blade.php</code>页面中：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">&lt;!-- resources/views/common/errors.blade.php --&gt;</span>
+
+@if (count($errors) &gt; 0)
+    <span class="c">&lt;!-- Form Error List --&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"alert alert-danger"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;strong&gt;</span>Whoops! Something went wrong!<span class="nt">&lt;/strong&gt;</span>
+
+        <span class="nt">&lt;br&gt;&lt;br&gt;</span>
+
+        <span class="nt">&lt;ul&gt;</span>
+            @foreach ($errors-&gt;all() as $error)
+                <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+            @endforeach
+        <span class="nt">&lt;/ul&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+@endif
+</code></pre>
+</div>
+
+<h4 id="section-11">创建任务</h4>
+
+<ul>
+  <li>继续完善<code class="highlighter-rouge">Route::post</code>方法，保存正确的数据到数据库：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Route::post('/task', function (Request $request) {
+    $validator = Validator::make($request-&gt;all(), [
+        'name' =&gt; 'required|max:255',
+    ]);
+
+    if ($validator-&gt;fails()) {
+        return redirect('/')
+            -&gt;withInput()
+            -&gt;withErrors($validator);
+    }
+
+    $task = new Task;
+    $task-&gt;name = $request-&gt;name;
+    $task-&gt;save();
+
+    return redirect('/');
+});
+</code></pre>
+</div>
+
+<h4 id="section-12">查看所有任务</h4>
+
+<ul>
+  <li>编辑<code class="highlighter-rouge">/</code>路径：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('/', function () {
+    $tasks = Task::orderBy('created_at', 'asc')-&gt;get();
+
+    return view('tasks', [
+        'tasks' =&gt; $tasks
+    ]); //第二个参数：数组中每个key都可在视图模板中作为变量访问
+});
+</code></pre>
+</div>
+
+<ul>
+  <li>编写<code class="highlighter-rouge">tasks.blade.php</code>：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@extends('layouts.app')
+
+@section('content')
+    <span class="c">&lt;!-- Create Task Form... --&gt;</span>
+
+    <span class="c">&lt;!-- Current Tasks --&gt;</span>
+    @if (count($tasks) &gt; 0)
+        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel panel-default"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel-heading"</span><span class="nt">&gt;</span>
+                Current Tasks
+            <span class="nt">&lt;/div&gt;</span>
+
+            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel-body"</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"table table-striped task-table"</span><span class="nt">&gt;</span>
+
+                    <span class="c">&lt;!-- Table Headings --&gt;</span>
+                    <span class="nt">&lt;thead&gt;</span>
+                        <span class="nt">&lt;th&gt;</span>Task<span class="nt">&lt;/th&gt;</span>
+                        <span class="nt">&lt;th&gt;</span><span class="ni">&amp;nbsp;</span><span class="nt">&lt;/th&gt;</span>
+                    <span class="nt">&lt;/thead&gt;</span>
+
+                    <span class="c">&lt;!-- Table Body --&gt;</span>
+                    <span class="nt">&lt;tbody&gt;</span>
+                        @foreach ($tasks as $task)
+                            <span class="nt">&lt;tr&gt;</span>
+                                <span class="c">&lt;!-- Task Name --&gt;</span>
+                                <span class="nt">&lt;td</span> <span class="na">class=</span><span class="s">"table-text"</span><span class="nt">&gt;</span>
+                                    <span class="nt">&lt;div&gt;&lt;/div&gt;</span>
+                                <span class="nt">&lt;/td&gt;</span>
+
+                                <span class="nt">&lt;td&gt;</span>
+                                    <span class="c">&lt;!-- TODO: Delete Button --&gt;</span>
+                                <span class="nt">&lt;/td&gt;</span>
+                            <span class="nt">&lt;/tr&gt;</span>
+                        @endforeach
+                    <span class="nt">&lt;/tbody&gt;</span>
+                <span class="nt">&lt;/table&gt;</span>
+            <span class="nt">&lt;/div&gt;</span>
+        <span class="nt">&lt;/div&gt;</span>
+    @endif
+@endsection
+</code></pre>
+</div>
+
+<h3 id="section-13">删除任务</h3>
+
+<h4 id="section-14">添加删除按钮</h4>
+
+<ul>
+  <li>完成<code class="highlighter-rouge">tasks.blade.php</code>:</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;tr&gt;
+    &lt;!-- Task Name --&gt;
+    &lt;td class="table-text"&gt;
+        &lt;div&gt;&lt;/div&gt;
+    &lt;/td&gt;
+
+    &lt;!-- Delete Button --&gt;
+    &lt;td&gt;
+        &lt;form action="" method="POST"&gt;
+            
+            
+
+            &lt;button type="submit" class="btn btn-danger"&gt;
+                &lt;i class="fa fa-trash"&gt;&lt;/i&gt; Delete
+            &lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+</code></pre>
+</div>
+
+<ul>
+  <li>注意，HTML表单的method只能是GET或者POST，所以这里不能用DELETE，而是用``生成<code class="highlighter-rouge">&lt;input type='hidden' name='_method' value='DELETE'</code>交给Laravel后台解析。</li>
+</ul>
+
+<h4 id="section-15">删除操作</h4>
+
+<ul>
+  <li>完成<code class="highlighter-rouge">/task/{task}</code>，这里使用了model binding的方式自动去除{task}作为形参，表示要删除的对象。</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Route::delete('/task/{task}', function (Task $task) {
+    $task-&gt;delete();
+
+    return redirect('/');
+});
+</code></pre>
+</div>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+  </body>
+</html>
