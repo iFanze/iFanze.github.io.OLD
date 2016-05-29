@@ -5,9 +5,142 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 27 May 2016 02:14:34 +0800</pubDate>
-    <lastBuildDate>Fri, 27 May 2016 02:14:34 +0800</lastBuildDate>
+    <pubDate>Mon, 30 May 2016 00:36:05 +0800</pubDate>
+    <lastBuildDate>Mon, 30 May 2016 00:36:05 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>【慕课网】Java高并发秒杀API（四）：高并发优化</title>
+        <description>&lt;p&gt;注：续前文。这两天去上海参加了华测的一个参观交流活动，感觉比起同样前途光明的GIS行业，还是互联网更适合我呢。刚回来就发现慕课网这个视频最后一部分更新啦~赶快把第一章综述的内容看了看，大致了解了下高并发产生的瓶颈和CDN、Redis、存储过程等在进行并发优化的作用等等。做笔记如下。具体的编码我想等到自己把前面三课的内容实现了之后再继续学习吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;高并发优化分析&lt;/h2&gt;
+
+&lt;p&gt;分析可能产生高并发的地方：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645378066039.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;详情页&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645378988870.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;使用CDN（内容分发网络）来加速用户获取数据：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一般部署在离用户最近的网络节点上&lt;/li&gt;
+  &lt;li&gt;命中CDN不需要访问后端服务器&lt;/li&gt;
+  &lt;li&gt;互联网公司会自己搭建，或租用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;获取系统时间&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;获取系统时间不用优化：因为Java服务器访问一次内存大约只有10ns。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;秒杀地址接口分析&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;无法使用CDN缓存&lt;/li&gt;
+  &lt;li&gt;适合服务器缓存：redis等（1wQPS）&lt;/li&gt;
+  &lt;li&gt;一致性维护成本低（超时穿透/主动更新）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645381091286.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;秒杀操作优化分析&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;无法使用CDN缓存&lt;/li&gt;
+  &lt;li&gt;后端缓存困难：库存问题，要通过MySQL的事务保证一致性。&lt;/li&gt;
+  &lt;li&gt;一行数据竞争：热点商品&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-5&quot;&gt;其他方案分析&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645365894875.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可以扛住非常非常高的并发，腾讯阿里常用&lt;/li&gt;
+  &lt;li&gt;运维成本和稳定性：NoSQL、MQ等都是分布式服务，不如MySQL稳定。需要一个强大的运维团队&lt;/li&gt;
+  &lt;li&gt;开发成本：数据一致性，回滚方案等。工程师对这些要非常熟悉&lt;/li&gt;
+  &lt;li&gt;幂等性难保证：重复秒杀问题。加大成本&lt;/li&gt;
+  &lt;li&gt;是一个不适合新生的架构，主要因为如上这些成本性问题&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;cg&quot;&gt;网络延迟和CG&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;对MySQL一条update进行压力测试：约4wQPS——不算低&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Java控制事务行为分析：
+&lt;img src=&quot;/images/posts/14645385010686.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;瓶颈分析：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645385711091.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Java GC：Garbage Collection，垃圾回收机制。Java + SQL + 网络延迟 + GC  ：这些共同导致低效&lt;/p&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;优化分析：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;行级锁在Commit之后释放&lt;/li&gt;
+  &lt;li&gt;优化方向：减少行级锁持有时间&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;延迟分析（同城机房和异地机房）&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14645372241542.jpg&quot; alt=&quot;&quot; /&gt;
+&lt;img src=&quot;/images/posts/14645372413927.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;update&quot;&gt;如何判断Update成功？&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Update自身没报错&lt;/li&gt;
+  &lt;li&gt;客户端确认Update影响记录数&lt;/li&gt;
+  &lt;li&gt;优化思路：把客户端逻辑放在MySQL服务器端，避免网络延迟和GC影响&lt;/li&gt;
+  &lt;li&gt;两种解决方案：修改源码定制SQL方案；使用存储过程让整个事务在MySQL端完成&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-8&quot;&gt;优化总结&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;前端控制：暴露接口，按钮防重复&lt;/li&gt;
+  &lt;li&gt;动静态数据分离：CDN缓存，后端缓存&lt;/li&gt;
+  &lt;li&gt;事务竞争优化：减少事务锁时间&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;redis&quot;&gt;Redis后端缓存优化编码&lt;/h2&gt;
+
+&lt;p&gt;（待更新）&lt;/p&gt;
+
+&lt;h2 id=&quot;section-9&quot;&gt;并发优化&lt;/h2&gt;
+
+&lt;p&gt;（待更新）&lt;/p&gt;
+
+&lt;h2 id=&quot;section-10&quot;&gt;系统部署架构&lt;/h2&gt;
+
+&lt;p&gt;（待更新）&lt;/p&gt;
+
+&lt;h2 id=&quot;section-11&quot;&gt;课程总结&lt;/h2&gt;
+
+&lt;p&gt;（待更新）&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 29 May 2016 23:55:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E5%9B%9B-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%BC%98%E5%8C%96/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E5%9B%9B-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%BC%98%E5%8C%96/</guid>
+        
+        <category>Java</category>
+        
+        <category>高并发</category>
+        
+        
+        <category>笔记</category>
+        
+        <category>@慕课网</category>
+        
+      </item>
     
       <item>
         <title>Laravel v5.2 框架学习笔记</title>
