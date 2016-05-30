@@ -46,6 +46,17 @@
   <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
   <link rel="canonical" href="http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
   <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?10581c22432798705ab269dd1ce9615c";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
 </head>
 
 
@@ -85,7 +96,7 @@
             
               <!-- QQ -->
               <li class="navigation__item">
-                <a href="http://fanze.qzone.qq.com" title="QQ:919446762 微信:iFanze" target="_blank">
+                <a href="/About/#contact" title="QQ:919446762 微信:iFanze">
                   <i class="fa fa-qq" aria-hidden="true"></i>
                   <span class="label">QQ</span>
                 </a>
@@ -596,6 +607,34 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
+<h2 id="section-16">问题解决</h2>
+
+<h3 id="section-17">服务器无响应问题</h3>
+
+<p>问题描述：访问 http://seckillphp.ifanze-local.cn/quickstart/public 提示服务器无响应。
+问题解决：记得给<code class="highlighter-rouge">storage</code>就<code class="highlighter-rouge">bootstrap/cache</code>赋777权限。</p>
+
+<h3 id="section-18">路由无效</h3>
+
+<p>问题描述：访问除主页外的地址，如http://seckillphp.ifanze-local.cn/quickstart/public/task，均显示404错误。
+问题解决：这个问题应该出现在第二次开启服务器之后，因为是apache的rewrite模块没有开启或者配置正确的问题：</p>
+
+<ol>
+  <li>在<code class="highlighter-rouge">httpd.conf</code>中取消下面一行前的注释：</li>
+</ol>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>LoadModule rewrite_module modules/mod_rewrite.so
+</code></pre>
+</div>
+
+<ol>
+  <li>配置<code class="highlighter-rouge">&lt;Directory&gt;</code>标签，使用：</li>
+</ol>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>AllowOverride all
+</code></pre>
+</div>
+
 
   </section>
   
@@ -639,7 +678,7 @@ s.setAttribute('data-timestamp', +new Date());
       </div>
 
       <footer class="footer">
-  <span class="footer__copyright">Copyright &copy; 孟凡泽 2016<br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+  <span class="footer__copyright">Copyright &copy; 2016 孟凡泽. All Rights Reserved.<br/><br/>Powered by Jekyll. <br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
 </footer> 
 
 <script type="text/javascript" src="/js/jquery.min.js"></script>
@@ -647,5 +686,6 @@ s.setAttribute('data-timestamp', +new Date());
 
 
     </div>
+    <script type="text/javascript" src="http://tajs.qq.com/stats?sId=56525424" charset="UTF-8"></script>
   </body>
 </html>
