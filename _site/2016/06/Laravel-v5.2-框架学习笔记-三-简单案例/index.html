@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Laravel v5.2 框架学习笔记</title>
+  <title>Laravel v5.2 框架学习笔记（三）：简单案例</title>
   <meta name="description" content="求知，思考，高效生活">
   <meta name="author" content="孟凡泽">
   <meta name="HandheldFriendly" content="True">
@@ -44,7 +44,7 @@
 
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
-  <link rel="canonical" href="http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+  <link rel="canonical" href="http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%B8%89-%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B/">
   <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
 
 <script>
@@ -178,562 +178,17 @@ var _hmt = _hmt || [];
         <article class="post-container post-container--single">
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="27 May 2016" class="post-meta__date date">27 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
+      <time datetime="10 Jun 2016" class="post-meta__date date">10 Jun 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
     </div>
-    <h1 class="post-title">Laravel v5.2 框架学习笔记</h1>
+    <h1 class="post-title">Laravel v5.2 框架学习笔记（三）：简单案例</h1>
   </header>
 
   <section class="post">
-    <p>注：写完上一篇ThinkPHP框架，再写一篇Laravel框架的学习笔记感觉好怪异。主要是因为在知乎上看到了一些PHP框架相关的讨论，有很多人力推Laravel，又说ThinkPHP哪里怎么怎么不合理，代码质量一般，风格糟糕等等……然后就打开Laravel官网看了一眼，仅仅是打开看了一眼，我就决定抛弃掉ThinkPHP转投看着很高大上的Laravel了！！</p>
-
-<p>注2：新开一段理智下来，Laravel更显专业、成熟，学着更具挑战性，我还可能会从其优秀的代码风格中受益，框架自身也足够稳定。当然也不是说ThinkPHP就不好，或许用来写一般的应用同样简洁高效，并且是国产基因，有中文文档，这些都是他的优点。</p>
-
-<p>注3：这里记录下官方文档里最基础的几篇，可以快速入门，了解基本运行流程并新建一个涉及简单数据库读写的站点。</p>
-
-<h2 id="laravel">安装并创建Laravel项目</h2>
-
-<ul>
-  <li>需要使用Composer。这个在上次装ThinkPHP的时候已经装了。不使用国内的镜像的话安装速度会很慢。</li>
-</ul>
-
-<h3 id="laravel-installer">方式一：使用Laravel installer创建项目</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>composer global require <span class="s2">"laravel/install"</span>   <span class="c">#laravel会被安装到：~/.composer/verdor/bin，把它加入PATH</span>
-laravel new blog    <span class="c">#创建一个项目，目录名称为blog</span>
-laravel new         <span class="c">#如果新建了一个Git库，并想让laravel生成在库的根目录下，使用这个语句</span>
-</code></pre>
-</div>
-
-<h3 id="composer-create-project">方式二：使用composer create-project</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>composer create-project --prefer-dist laravel/laravel blog
-</code></pre>
-</div>
-
-<h2 id="section">第一次运行</h2>
-
-<ul>
-  <li>在Apache中新建虚拟主机，配置网站的根目录为所创建项目下的<code class="highlighter-rouge">public</code>目录。具体方法见之前写的博客（编辑<code class="highlighter-rouge">httpd-vhosts.conf</code>和<code class="highlighter-rouge">/etc/hosts</code>文件）。</li>
-  <li>要配置<code class="highlighter-rouge">storage</code>和<code class="highlighter-rouge">bootstrap/cache</code>目录的访问权限，至少755。</li>
-  <li>在浏览器访问配置的主机名进行测试：
-<img src="/images/posts/14647055338077.jpg" alt="" /></li>
-</ul>
-
-<h2 id="section-1">环境配置</h2>
-
-<ul>
-  <li>在<code class="highlighter-rouge">.env</code>中配置环境信息，其中<code class="highlighter-rouge">APP_ENV</code>即是环境名。</li>
-  <li><code class="highlighter-rouge">.env</code>不要使用版本控制，而应该使用<code class="highlighter-rouge">.env.example</code>。</li>
-</ul>
-
-<h3 id="section-2">环境配置的读取</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>env('APP_DEBUG', false)     //第二个参数为默认值
-</code></pre>
-</div>
-
-<h3 id="section-3">判断当前环境</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$environment = App::environment();
-//或者
-if(App::environment('local', 'staging')){
-    // 环境是local或者staging
-}
-//或者
-$environment = app()-&gt;environment();
-</code></pre>
-</div>
-
-<h2 id="section-4">项目配置</h2>
-
-<ul>
-  <li>配置文件位于<code class="highlighter-rouge">config</code>目录。</li>
-</ul>
-
-<h3 id="section-5">配置的访问</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$value = config('app.timezone');                //可以再设置默认值
-</code></pre>
-</div>
-
-<h3 id="section-6">临时改变项目配置</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>config(['app.timezone' =&gt; 'America/Chicago']);  
-</code></pre>
-</div>
-
-<h2 id="section-7">项目维护</h2>
-
-<h3 id="section-8">缓存的使用</h3>
-
-<ul>
-  <li>为了提升性能，在生产环境中定期运行下面的命令可以将配置文件转成单个文件，在开发环境中不要用。</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>php artisan config:cache
-php artisan config:clear
-</code></pre>
-</div>
-
-<h3 id="section-9">开启维护模式</h3>
-
-<ul>
-  <li>开启Maintenance Mode，可以对所有请求展示一个自定义视图，默认是<code class="highlighter-rouge">resources/views/errors/503.blade.php</code>。应在系统维护期使用。（<a href="https://laravel.com/docs/5.2/configuration#maintenance-mode">更多：关于队列任务和zero-downtime发布的实现</a>）开启和关闭的指令分别是：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>php artisan down
-php artisan up
-</code></pre>
-</div>
-
-<h2 id="section-10">路由</h2>
-
-<ul>
-  <li>定义在<code class="highlighter-rouge">app/Http/routes.php</code>。</li>
-  <li>支持的HTTP verb：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get($uri, $callback);
-Route::post($uri, $callback);
-Route::put($uri, $callback);
-Route::patch($uri, $callback);
-Route::delete($uri, $callback);
-Route::options($uri, $callback);
-</code></pre>
-</div>
-
-<ul>
-  <li>如果希望支持多个或者任意HTTP verb：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::match(['get', 'post'], '/', $callback);
-Route::any('/', $callback);
-</code></pre>
-</div>
-
-<ul>
-  <li><code class="highlighter-rouge">$callback</code>既可以是匿名函数，也可以指定控制器下的方法，如：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('/', HomeController@index);
-</code></pre>
-</div>
-
-<h3 id="section-11">路由的参数</h3>
-
-<ul>
-  <li>必选参数：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('posts/{post}/comments/{comment}', function ($postId, $commentId) {
-    //
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>可选参数：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('user/{name?}', function ($name = null) {
-    //注意，$name要有默认值
-});
-</code></pre>
-</div>
-<hr />
-
-<ul>
-  <li>使用正则表达式对参数进行限制：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('user/{id}/{name}', function ($id, $name) {
-    //
-})
--&gt;where(['id' =&gt; '[0-9]+', 'name' =&gt; '[a-z]+']);
-</code></pre>
-</div>
-
-<ul>
-  <li>使用正则表达式在项目全局范围内限制某参数：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>// 位于：app/Providers/RouteServiceProvider.php
-public function boot(Router $router)
-{
-    $router-&gt;pattern('id', '[0-9]+');
-    parent::boot($router);
-}
-</code></pre>
-</div>
-
-<h3 id="section-12">命名路由</h3>
-
-<ul>
-  <li>三种方式：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('user/profile', ['as' =&gt; 'profile', function () {
-    //
-}]);
-
-Route::get('user/profile', [
-    'as' =&gt; 'profile', 'uses' =&gt; 'UserController@showProfile'
-]);
-
-Route::get('user/profile', 'UserController@showProfile')-&gt;name('profile');
-
-</code></pre>
-</div>
-
-<ul>
-  <li>继而可以进行路由分组：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['as' =&gt; 'admin::'], function () {
-    Route::get('dashboard', ['as' =&gt; 'dashboard', function () {
-        // Route named "admin::dashboard"
-    }]);
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>利用路由名称得到URL或进行重定向：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$url = route('profile');
-$url = route('profile', ['id' =&gt; 1]);   //带参数的写法
-
-return redirect()-&gt;route('profile');    //重定向
-</code></pre>
-</div>
-
-<h3 id="section-13">路由分组的常见用途</h3>
-
-<ul>
-  <li>公共的中间件：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['middleware' =&gt; 'auth'], function () {
-    Route::get('/', function ()    {
-        // Uses Auth Middleware
-    });
-
-    Route::get('user/profile', function () {
-        // Uses Auth Middleware
-    });
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>公共的命名空间（不用指定前缀<code class="highlighter-rouge">App\Http\Controllers</code>）：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['namespace' =&gt; 'Admin'], function()
-{
-    // Controllers Within The "App\Http\Controllers\Admin" Namespace
-
-    Route::group(['namespace' =&gt; 'User'], function() {
-        // Controllers Within The "App\Http\Controllers\Admin\User" Namespace
-    });
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>公共的子域名：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['domain' =&gt; '{account}.myapp.com'], function () {
-    Route::get('user/{id}', function ($account, $id) {
-        //
-    });
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>公共的路由前缀：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['prefix' =&gt; 'admin'], function () {
-    Route::get('users', function ()    {
-        // Matches The "/admin/users" URL
-    });
-});
-
-Route::group(['prefix' =&gt; 'accounts/{account_id}'], function () {
-    Route::get('detail', function ($accountId)    {
-        // Matches The "/accounts/{account_id}/detail" URL
-    });
-});
-</code></pre>
-</div>
-
-<h3 id="csrf">CSRF的防御</h3>
-
-<ul>
-  <li>关于CSRF（Cross-site request forgery，跨站请求伪造）：<a href="http://www.cnblogs.com/hyddd/archive/2009/04/09/1432744.html">查看详情</a></li>
-  <li>在表单中使用：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>
-</code></pre>
-</div>
-
-<p>等价于：</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>&lt;input type="hidden" name="_token" value="&lt;?php echo csrf_token(); ?&gt;"&gt;
-</code></pre>
-</div>
-
-<ul>
-  <li>web中间件组中的VerifyCsrfToken中间件会帮助你完成认证工作。</li>
-  <li>如果想排除对某些URI使用CSRF保护，可以defining their routes outside of the web middleware group that is included in the default routes.php file，或者编辑：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>// app/Http/Middleware/VerifyCsrfToken.php
-protected $except = [
-   'stripe/*',
-];
-</code></pre>
-</div>
-
-<ul>
-  <li><code class="highlighter-rouge">X-CSRF-TOKEN</code>和<code class="highlighter-rouge">X-XSRF-TOKEN</code>就不说了，用到时再去了解吧。</li>
-</ul>
-
-<h3 id="section-14">路由中的模型绑定</h3>
-
-<h4 id="section-15">隐式绑定</h4>
-
-<ul>
-  <li>Laravel会自动寻找到ID与<code class="highlighter-rouge"><span class="p">{</span><span class="err">user</span><span class="p">}</span></code>匹配的<code class="highlighter-rouge">User</code>模型实例，如果找不到，会返回404。</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('api/users/{user}', function (App\User $user) {
-    return $user-&gt;email;
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>如果并不使用<code class="highlighter-rouge">id</code>列进行查找，可以在model中重写：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function getRouteKeyName()
-{
-    return 'slug';
-}
-</code></pre>
-</div>
-
-<h4 id="section-16">显式绑定</h4>
-
-<ul>
-  <li>如果要将参数名和模型绑定，编辑<code class="highlighter-rouge">RouteServiceProvider::boot</code>方法：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function boot(Router $router)
-{
-    parent::boot($router);
-    //将{user}绑定到App\User，默认寻找的是id列
-    $router-&gt;model('user', 'App\User');
-}
-</code></pre>
-</div>
-
-<ul>
-  <li>如果要自定义寻找规则，编辑<code class="highlighter-rouge">routes.php</code>文件，增加：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$router-&gt;bind('user', function ($value) {
-    return App\User::where('name', $value)-&gt;first();
-});
-</code></pre>
-</div>
-
-<ul>
-  <li>如果要自定义”not found“行为，就新增第三个参数：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$router-&gt;model('user', 'App\User', function () {
-    throw new NotFoundHttpException;
-});
-</code></pre>
-</div>
-
-<h3 id="putdeleteput">表单提交模拟PUT/DELETE/PUT等</h3>
-
-<ul>
-  <li>使用以下三种方式之一：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>&lt;input type="hidden" name="_method" value="PUT"&gt;
-&lt;?php echo method_field('PUT'); ?&gt;
-
-</code></pre>
-</div>
-
-<h3 id="section-17">查看当前路由</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$route = Route::current();
-$name = $route-&gt;getName();
-$actionName = $route-&gt;getActionName();
-//或
-$name = Route::currentRouteName();
-$action = Route::currentRouteAction();
-</code></pre>
-</div>
-
-<h2 id="section-18">中间件</h2>
-
-<h3 id="section-19">创建中间件</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>php artisan make:middleware AgeMiddleware
-</code></pre>
-</div>
-
-<p>会自动生成：</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function handle($request, Closure $next)
-{
-   return $next($request);
-}
-</code></pre>
-</div>
-
-<p>使用示例：</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function handle($request, Closure $next)
-{
-   if ($request-&gt;input('age') <span class="err">&lt;</span>= 200) {
-       return redirect('home');
-   }
-   return $next($request);
-}
-</code></pre>
-</div>
-
-<h3 id="beforeafter">两种中间件：Before/After</h3>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function handle($request, Closure $next)
-{
-   // Perform action
-   return $next($request);
-}
-
-public function handle($request, Closure $next)
-{
-   $response = $next($request);
-   // Perform action
-   return $response;
-}
-</code></pre>
-</div>
-
-<h3 id="section-20">注册中间件</h3>
-
-<h4 id="section-21">全局中间件</h4>
-
-<ul>
-  <li>编辑<code class="highlighter-rouge">app/Http/Kernel.php</code>中的<code class="highlighter-rouge">$middleware</code>属性，让所有请求都使用中间件。</li>
-</ul>
-
-<h4 id="section-22">分配中间件给路由</h4>
-
-<ul>
-  <li>首先在<code class="highlighter-rouge">app/Http/Kernel.php</code>中的<code class="highlighter-rouge">$routeMiddleware</code>中注册个名字。</li>
-  <li>四种方式分配：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::get('admin/profile', ['middleware' =&gt; 'auth', function () {
-}]);
-
-Route::get('/', ['middleware' =&gt; ['first', 'second'], function () {
-}]);
-
-Route::get('/', function () {
-})-&gt;middleware(['first', 'second']);
-
-use App\Http\Middleware\FooMiddleware;
-Route::get('admin/profile', ['middleware' =&gt; FooMiddleware::class, function () {
-}]);
-</code></pre>
-</div>
-
-<h3 id="section-23">中间件分组</h3>
-
-<ul>
-  <li>编辑<code class="highlighter-rouge">app/Http/Kernel.php</code>中的<code class="highlighter-rouge">$middlewareGroups</code>属性。默认创建了<code class="highlighter-rouge">web</code>和<code class="highlighter-rouge">api</code>两个分组。</li>
-  <li>可以将中间件组分配给路由：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::group(['middleware' =&gt; ['web']], function () {
-    //
-});
-</code></pre>
-</div>
-
-<h3 id="section-24">中间件参数</h3>
-
-<ul>
-  <li>如用户权限的判断，在<code class="highlighter-rouge">$next</code>后新增参数：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>public function handle($request, Closure $next, $role)
-{
-   if (! $request-&gt;user()-&gt;hasRole($role)) {
-       // Redirect...
-   }
-   return $next($request);
-}
-</code></pre>
-</div>
-
-<ul>
-  <li>在路由定义中指定参数，用冒号将中间件名和参数分开，过个参数用逗号分开：</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Route::put('post/{id}', ['middleware' =&gt; 'role:editor', function ($id) {
-    //
-}]);
-</code></pre>
-</div>
-
-<h3 id="section-25">有期限的中间件</h3>
-
-<ul>
-  <li>添加<code class="highlighter-rouge">terminate($request, $response)</code>方法</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>class StartSession
-{
-    public function handle($request, Closure $next)
-    {
-        return $next($request);
-    }
-
-    public function terminate($request, $response)
-    {
-        // Store the session data...
-    }
-}
-</code></pre>
-</div>
-
-<h2 id="section-26">控制器</h2>
-
-<h2 id="section-27">请求</h2>
-
-<h2 id="section-28">响应</h2>
-
-<h2 id="section-29">视图</h2>
+    <p>注：官网上的demo，实现了一个简单的、与数据库有交互的Task List。</p>
 
 <h2 id="basic-task-list">教程：Basic Task List</h2>
 
-<h3 id="section-30">新建工程</h3>
+<h3 id="section">新建工程</h3>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>composer create-project laravel/laravel quickstart --prefer-dist
 <span class="c"># 或</span>
@@ -741,7 +196,7 @@ laravel new quickstart
 </code></pre>
 </div>
 
-<h3 id="section-31">克隆成品(可选)</h3>
+<h3 id="section-1">克隆成品(可选)</h3>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>git clone https://github.com/laravel/quickstart-basic quickstart
 <span class="nb">cd </span>quickstart
@@ -750,7 +205,7 @@ php artisan migrate
 </code></pre>
 </div>
 
-<h3 id="section-32">准备数据库</h3>
+<h3 id="section-2">准备数据库</h3>
 
 <h4 id="database-migrations">Database Migrations</h4>
 
@@ -798,7 +253,7 @@ php artisan migrate
 </code></pre>
 </div>
 
-<h3 id="section-33">路由</h3>
+<h3 id="section-3">路由</h3>
 
 <ul>
   <li>默认全部定义在<code class="highlighter-rouge">app/Http/routes.php</code>中。</li>
@@ -822,7 +277,7 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h3 id="section-34">布局和视图</h3>
+<h3 id="section-4">布局和视图</h3>
 
 <ul>
   <li><code class="highlighter-rouge">.blade.php</code>代表使用Blade模板引擎。</li>
@@ -893,9 +348,9 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h3 id="section-35">添加任务</h3>
+<h3 id="section-5">添加任务</h3>
 
-<h4 id="section-36">表单验证</h4>
+<h4 id="section-6">表单验证</h4>
 
 <ul>
   <li>完成<code class="highlighter-rouge">Route::post</code>函数：</li>
@@ -941,7 +396,7 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h4 id="section-37">创建任务</h4>
+<h4 id="section-7">创建任务</h4>
 
 <ul>
   <li>继续完善<code class="highlighter-rouge">Route::post</code>方法，保存正确的数据到数据库：</li>
@@ -967,7 +422,7 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h4 id="section-38">查看所有任务</h4>
+<h4 id="section-8">查看所有任务</h4>
 
 <ul>
   <li>编辑<code class="highlighter-rouge">/</code>路径：</li>
@@ -1031,9 +486,9 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h3 id="section-39">删除任务</h3>
+<h3 id="section-9">删除任务</h3>
 
-<h4 id="section-40">添加删除按钮</h4>
+<h4 id="section-10">添加删除按钮</h4>
 
 <ul>
   <li>完成<code class="highlighter-rouge">tasks.blade.php</code>:</li>
@@ -1064,7 +519,7 @@ Route::delete('/task/{task}', function (Task $task) {
   <li>注意，HTML表单的method只能是GET或者POST，所以这里不能用DELETE，而是用``生成<code class="highlighter-rouge">&lt;input type='hidden' name='_method' value='DELETE'</code>交给Laravel后台解析。</li>
 </ul>
 
-<h4 id="section-41">删除操作</h4>
+<h4 id="section-11">删除操作</h4>
 
 <ul>
   <li>完成<code class="highlighter-rouge">/task/{task}</code>，这里使用了model binding的方式自动去除{task}作为形参，表示要删除的对象。</li>
@@ -1078,14 +533,14 @@ Route::delete('/task/{task}', function (Task $task) {
 </code></pre>
 </div>
 
-<h2 id="section-42">问题解决</h2>
+<h2 id="section-12">问题解决</h2>
 
-<h3 id="section-43">服务器无响应问题</h3>
+<h3 id="section-13">服务器无响应问题</h3>
 
 <p>问题描述：访问 http://seckillphp.ifanze-local.cn/quickstart/public 提示服务器无响应。
 问题解决：记得给<code class="highlighter-rouge">storage</code>和<code class="highlighter-rouge">bootstrap/cache</code>赋777权限。</p>
 
-<h3 id="section-44">路由无效</h3>
+<h3 id="section-14">路由无效</h3>
 
 <p>问题描述：访问除主页外的地址，如http://seckillphp.ifanze-local.cn/quickstart/public/task，均显示404错误。
 问题解决：这个问题应该出现在第二次开启服务器之后，因为是apache的rewrite模块没有开启或者配置正确的问题：</p>

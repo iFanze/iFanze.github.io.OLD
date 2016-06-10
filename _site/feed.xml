@@ -5,9 +5,916 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 08 Jun 2016 04:49:15 +0800</pubDate>
-    <lastBuildDate>Wed, 08 Jun 2016 04:49:15 +0800</lastBuildDate>
+    <pubDate>Fri, 10 Jun 2016 22:52:50 +0800</pubDate>
+    <lastBuildDate>Fri, 10 Jun 2016 22:52:50 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>Laravel v5.2 框架学习笔记（四）：数据库</title>
+        <description>&lt;p&gt;注：Laravel数据访问层的使用，很容易理解，所以这一篇基本上就是把官网上的代码拷下来做查阅用的。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;入门&lt;/h2&gt;
+
+&lt;p&gt;Laravel支持的三种与数据库交互的方式：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;raw SQL&lt;/li&gt;
+  &lt;li&gt;fluent query builder&lt;/li&gt;
+  &lt;li&gt;Eloquent ORM&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Laravel支持的四种DBMS：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;MySQL&lt;/li&gt;
+  &lt;li&gt;Postgres&lt;/li&gt;
+  &lt;li&gt;SQLite&lt;/li&gt;
+  &lt;li&gt;SQL Server&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;配置&lt;/h3&gt;
+
+&lt;p&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;config/database.php&lt;/code&gt;中有四种DBMS的配置模板。如果对读（select）和写（insert、update、delete）要求使用不同的配置。可以用以下写法：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&#39;mysql&#39; =&amp;gt; [
+    &#39;read&#39; =&amp;gt; [
+        &#39;host&#39; =&amp;gt; &#39;192.168.1.1&#39;,
+    ],
+    &#39;write&#39; =&amp;gt; [
+        &#39;host&#39; =&amp;gt; &#39;196.168.1.2&#39;
+    ],
+    &#39;driver&#39;    =&amp;gt; &#39;mysql&#39;,
+    &#39;database&#39;  =&amp;gt; &#39;database&#39;,
+    &#39;username&#39;  =&amp;gt; &#39;root&#39;,
+    &#39;password&#39;  =&amp;gt; &#39;&#39;,
+    &#39;charset&#39;   =&amp;gt; &#39;utf8&#39;,
+    &#39;collation&#39; =&amp;gt; &#39;utf8_unicode_ci&#39;,
+    &#39;prefix&#39;    =&amp;gt; &#39;&#39;,
+],
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;监听查询事件&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;namespace App\Providers;
+
+use DB;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        DB::listen(function ($query) {
+            // $query-&amp;gt;sql
+            // $query-&amp;gt;bindings
+            // $query-&amp;gt;time
+        });
+    }
+
+    public function register()
+    {
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;事务&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//1.使用闭包自动进行commit或者rollback
+DB::transaction(function () {
+    DB::table(&#39;users&#39;)-&amp;gt;update([&#39;votes&#39; =&amp;gt; 1]);
+    DB::table(&#39;posts&#39;)-&amp;gt;delete();
+});
+
+//2.手动控制
+DB::beginTransaction();
+DB::rollBack();
+DB::commit();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;使用多个数据库连接&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$users = DB::connection(&#39;foo&#39;)-&amp;gt;select(...);
+
+$pdo = DB::connection()-&amp;gt;getPdo();  //You may also access the raw, underlying PDO instance using the getPdo method on a connection instance
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;raw-sql&quot;&gt;Raw SQL&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;code class=&quot;highlighter-rouge&quot;&gt;DB&lt;/code&gt;facade实现。&lt;/p&gt;
+
+&lt;h3 id=&quot;select&quot;&gt;select&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//1.参数绑定，可以防止SQL注入
+$users = DB::select(&#39;select * from users where active = ?&#39;, [1]);
+foreach ($users as $user) {
+    echo $user-&amp;gt;name;
+}
+
+//2.具有命名的参数绑定
+$results = DB::select(&#39;select * from users where id = :id&#39;, [&#39;id&#39; =&amp;gt; 1]);   
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;insertupdatedelete&quot;&gt;insert、update、delete&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DB::insert(&#39;insert into users (id, name) values (?, ?)&#39;, [1, &#39;Dayle&#39;]);
+$affected = DB::update(&#39;update users set votes = 100 where name = ?&#39;, [&#39;John&#39;]);
+$deleted = DB::delete(&#39;delete from users&#39;);
+//其它没有任何返回值的指令
+DB::statement(&#39;drop table users&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;query-builder&quot;&gt;Query Builder&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$users = DB::table(&#39;users&#39;)-&amp;gt;get();                         //获取所有行，返回数组
+$user = DB::table(&#39;users&#39;)-&amp;gt;where(&#39;name&#39;, &#39;John&#39;)-&amp;gt;first(); //获取某一行，返回对象
+$email = DB::table(&#39;users&#39;)-&amp;gt;where(&#39;name&#39;, &#39;John&#39;)-&amp;gt;value(&#39;email&#39;);     //获取某一行的某一列
+
+//如果量较大，可以分成小包进行处理：
+DB::table(&#39;users&#39;)-&amp;gt;orderBy(&#39;id&#39;)-&amp;gt;chunk(100, function($users) {
+    foreach ($users as $user) {
+        //
+    }
+    //如果return false，则不再进行之后的操作
+});
+
+//某一列组成的列表
+$titles = DB::table(&#39;roles&#39;)-&amp;gt;pluck(&#39;title&#39;);
+foreach ($titles as $title)...
+//可以为这个列表指定自定义的key
+$roles = DB::table(&#39;roles&#39;)-&amp;gt;pluck(&#39;title&#39;, &#39;name&#39;);
+foreach ($roles as $name =&amp;gt; $title)...
+
+//聚合操作：count、max、min、avg、sum
+$users = DB::table(&#39;users&#39;)-&amp;gt;count();
+$price = DB::table(&#39;orders&#39;)-&amp;gt;max(&#39;price&#39;);
+
+//综合应用：
+$price = DB::table(&#39;orders&#39;)
+                -&amp;gt;where(&#39;finalized&#39;, 1)
+                -&amp;gt;avg(&#39;price&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;select-1&quot;&gt;select&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//指定列
+$users = DB::table(&#39;users&#39;)-&amp;gt;select(&#39;name&#39;, &#39;email as user_email&#39;)-&amp;gt;get();
+//distinct
+$users = DB::table(&#39;users&#39;)-&amp;gt;distinct()-&amp;gt;get();
+//向现有查询实例中添加列
+$query = DB::table(&#39;users&#39;)-&amp;gt;select(&#39;name&#39;);
+$users = $query-&amp;gt;addSelect(&#39;age&#39;)-&amp;gt;get();
+//插入raw SQL
+$users = DB::table(&#39;users&#39;)
+                     -&amp;gt;select(DB::raw(&#39;count(*) as user_count, status&#39;))
+                     -&amp;gt;where(&#39;status&#39;, &#39;&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&amp;gt;&#39;, 1)
+                     -&amp;gt;groupBy(&#39;status&#39;)
+                     -&amp;gt;get();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;join&quot;&gt;join&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//Inner Join
+$users = DB::table(&#39;users&#39;)
+            -&amp;gt;join(&#39;contacts&#39;, &#39;users.id&#39;, &#39;=&#39;, &#39;contacts.user_id&#39;)
+            -&amp;gt;join(&#39;orders&#39;, &#39;users.id&#39;, &#39;=&#39;, &#39;orders.user_id&#39;)
+            -&amp;gt;select(&#39;users.*&#39;, &#39;contacts.phone&#39;, &#39;orders.price&#39;)
+            -&amp;gt;get();
+//Left Join
+$users = DB::table(&#39;users&#39;)
+            -&amp;gt;leftJoin(&#39;posts&#39;, &#39;users.id&#39;, &#39;=&#39;, &#39;posts.user_id&#39;)
+            -&amp;gt;get();
+//Cross Join
+$users = DB::table(&#39;sizes&#39;)
+            -&amp;gt;crossJoin(&#39;colours&#39;)
+            -&amp;gt;get();
+            
+//更高级的Join，用闭包作第二个参数，其参数是JoinClause对象。`on`和`orOn`用于某列和某列进行比较
+DB::table(&#39;users&#39;)
+        -&amp;gt;join(&#39;contacts&#39;, function ($join) {
+            $join-&amp;gt;on(&#39;users.id&#39;, &#39;=&#39;, &#39;contacts.user_id&#39;)-&amp;gt;orOn(...);
+        })
+        -&amp;gt;get();
+//也可以使用`where`和`orWhere`，用于某列和某值进行比较
+DB::table(&#39;users&#39;)
+        -&amp;gt;join(&#39;contacts&#39;, function ($join) {
+            $join-&amp;gt;on(&#39;users.id&#39;, &#39;=&#39;, &#39;contacts.user_id&#39;)
+                 -&amp;gt;where(&#39;contacts.user_id&#39;, &#39;&amp;gt;&#39;, 5);
+        })
+        -&amp;gt;get();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;union&quot;&gt;union&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$first = DB::table(&#39;users&#39;)
+            -&amp;gt;whereNull(&#39;first_name&#39;);
+$users = DB::table(&#39;users&#39;)
+            -&amp;gt;whereNull(&#39;last_name&#39;)
+            -&amp;gt;union($first)
+            -&amp;gt;get();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;注：&lt;code class=&quot;highlighter-rouge&quot;&gt;unionAll&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;union&lt;/code&gt;也有相同的用法&lt;/p&gt;
+
+&lt;h3 id=&quot;where&quot;&gt;where&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//1. 简单用法，操作符可以用`&amp;gt;=`、`&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&amp;gt;`、`like`等
+$users = DB::table(&#39;users&#39;)-&amp;gt;where(&#39;votes&#39;, &#39;=&#39;, 100)-&amp;gt;get();
+$users = DB::table(&#39;users&#39;)-&amp;gt;where(&#39;votes&#39;, 100)-&amp;gt;get();
+$users = DB::table(&#39;users&#39;)-&amp;gt;where([
+    [&#39;status&#39;,&#39;1&#39;],
+    [&#39;subscribed&#39;,&#39;&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&amp;gt;&#39;,&#39;1&#39;],
+])-&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;where(&#39;votes&#39;, &#39;&amp;gt;&#39;, 100)
+                    -&amp;gt;orWhere(&#39;name&#39;, &#39;John&#39;)
+                    -&amp;gt;get();
+//2. 判断范围
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereBetween(&#39;votes&#39;, [1, 100])-&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereNotBetween(&#39;votes&#39;, [1, 100])
+                    -&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereIn(&#39;id&#39;, [1, 2, 3])
+                    -&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereNotIn(&#39;id&#39;, [1, 2, 3])
+                    -&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereNull(&#39;updated_at&#39;)
+                    -&amp;gt;get();
+$users = DB::table(&#39;users&#39;)
+                    -&amp;gt;whereNotNull(&#39;updated_at&#39;)
+                    -&amp;gt;get();
+//3. 比较两列                    
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;whereColumn(&#39;first_name&#39;, &#39;last_name&#39;);
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;whereColumn(&#39;updated_at&#39;, &#39;&amp;gt;&#39;, &#39;created_at&#39;); 
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;whereColumn([
+                    [&#39;first_name&#39;, &#39;last_name&#39;],
+                    [&#39;updated_at&#39;, &#39;&amp;gt;&#39;, &#39;created_at&#39;]
+                ]);                                                                                                               
+//4. 参数分组
+//select * from users where name = &#39;John&#39; or (votes &amp;gt; 100 and title &lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&amp;gt; &#39;Admin&#39;)
+DB::table(&#39;users&#39;)
+            -&amp;gt;where(&#39;name&#39;, &#39;=&#39;, &#39;John&#39;)
+            -&amp;gt;orWhere(function ($query) {           //闭包作参数，其参数为一个query builder实例
+                $query-&amp;gt;where(&#39;votes&#39;, &#39;&amp;gt;&#39;, 100)
+                      -&amp;gt;where(&#39;title&#39;, &#39;&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&amp;gt;&#39;, &#39;Admin&#39;);
+            })
+            -&amp;gt;get();            
+//5. exists子句            
+DB::table(&#39;users&#39;)
+            -&amp;gt;whereExists(function ($query) {
+                $query-&amp;gt;select(DB::raw(1))
+                      -&amp;gt;from(&#39;orders&#39;)
+                      -&amp;gt;whereRaw(&#39;orders.user_id = users.id&#39;);
+            })
+            -&amp;gt;get();
+/*
+    select * from users
+    where exists (
+        select 1 from orders where orders.user_id = users.id
+    )
+*/
+//6. JSON where子句（需要MySQL 5.7或Postgres）
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;where(&#39;preferences-&amp;gt;dining-&amp;gt;meal&#39;, &#39;salad&#39;)
+                -&amp;gt;get();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;order&quot;&gt;order&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//升降序
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;orderBy(&#39;name&#39;, &#39;desc&#39;)   //asc或desc
+                -&amp;gt;get();
+//随机序
+$randomUser = DB::table(&#39;users&#39;)
+                -&amp;gt;inRandomOrder()
+                -&amp;gt;first();    
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;grouphave&quot;&gt;group、have&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$users = DB::table(&#39;users&#39;)
+                -&amp;gt;groupBy(&#39;account_id&#39;)
+                -&amp;gt;having(&#39;account_id&#39;, &#39;&amp;gt;&#39;, 100)        //用法同where
+                -&amp;gt;get();
+$users = DB::table(&#39;orders&#39;)
+                -&amp;gt;select(&#39;department&#39;, DB::raw(&#39;SUM(price) as total_sales&#39;))
+                -&amp;gt;groupBy(&#39;department&#39;)
+                -&amp;gt;havingRaw(&#39;SUM(price) &amp;gt; 2500&#39;)        //使用raw SQL
+                -&amp;gt;get();                
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;limitoffset&quot;&gt;limit、offset&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$users = DB::table(&#39;users&#39;)-&amp;gt;skip(10)-&amp;gt;take(5)-&amp;gt;get();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;条件语句&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$role = $request-&amp;gt;input(&#39;role&#39;);
+//如果when函数的第一个参数为true，就执行闭包中的查询。否则就不执行。
+$users = DB::table(&#39;users&#39;)
+                -&amp;gt;when($role, function ($query) use ($role) {
+                    return $query-&amp;gt;where(&#39;role_id&#39;, $role);
+                })
+                -&amp;gt;get();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;insert&quot;&gt;insert&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DB::table(&#39;users&#39;)-&amp;gt;insert(
+    [&#39;email&#39; =&amp;gt; &#39;john@example.com&#39;, &#39;votes&#39; =&amp;gt; 0]
+);
+DB::table(&#39;users&#39;)-&amp;gt;insert([
+    [&#39;email&#39; =&amp;gt; &#39;taylor@example.com&#39;, &#39;votes&#39; =&amp;gt; 0],
+    [&#39;email&#39; =&amp;gt; &#39;dayle@example.com&#39;, &#39;votes&#39; =&amp;gt; 0]
+]);
+//返回自增的id（注意如果是postgres，要求自增的列名是id，否则将列名写在insertGetId()的第二个参数中）
+$id = DB::table(&#39;users&#39;)-&amp;gt;insertGetId(
+    [&#39;email&#39; =&amp;gt; &#39;john@example.com&#39;, &#39;votes&#39; =&amp;gt; 0]
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;update&quot;&gt;update&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DB::table(&#39;users&#39;)
+            -&amp;gt;where(&#39;id&#39;, 1)
+            -&amp;gt;update([&#39;votes&#39; =&amp;gt; 1]);
+//快速自增自减
+DB::table(&#39;users&#39;)-&amp;gt;increment(&#39;votes&#39;);
+DB::table(&#39;users&#39;)-&amp;gt;increment(&#39;votes&#39;, 5);
+DB::table(&#39;users&#39;)-&amp;gt;decrement(&#39;votes&#39;);
+DB::table(&#39;users&#39;)-&amp;gt;decrement(&#39;votes&#39;, 5);
+DB::table(&#39;users&#39;)-&amp;gt;increment(&#39;votes&#39;, 1, [&#39;name&#39; =&amp;gt; &#39;John&#39;]);  //同时更新其它列
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;delete&quot;&gt;delete&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DB::table(&#39;users&#39;)-&amp;gt;where(&#39;votes&#39;, &#39;&amp;gt;&#39;, 100)-&amp;gt;delete();
+DB::table(&#39;users&#39;)-&amp;gt;truncate(); //删除所有数据并置自动递增字段为0
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;pessimistic-locking&quot;&gt;悲观的锁（Pessimistic Locking）&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DB::table(&#39;users&#39;)-&amp;gt;where(&#39;votes&#39;, &#39;&amp;gt;&#39;, 100)-&amp;gt;sharedLock()-&amp;gt;get();      //防止更新
+DB::table(&#39;users&#39;)-&amp;gt;where(&#39;votes&#39;, &#39;&amp;gt;&#39;, 100)-&amp;gt;lockForUpdate()-&amp;gt;get();   //防止更新或查询
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;migrations&quot;&gt;Migrations&lt;/h2&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h2 id=&quot;seeding&quot;&gt;Seeding&lt;/h2&gt;
+
+&lt;!-- more --&gt;
+
+</description>
+        <pubDate>Fri, 10 Jun 2016 02:12:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%9B%9B-%E6%95%B0%E6%8D%AE%E5%BA%93/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%9B%9B-%E6%95%B0%E6%8D%AE%E5%BA%93/</guid>
+        
+        <category>PHP</category>
+        
+        
+        <category>笔记</category>
+        
+      </item>
+    
+      <item>
+        <title>Laravel v5.2 框架学习笔记（三）：简单案例</title>
+        <description>&lt;p&gt;注：官网上的demo，实现了一个简单的、与数据库有交互的Task List。&lt;/p&gt;
+
+&lt;h2 id=&quot;basic-task-list&quot;&gt;教程：Basic Task List&lt;/h2&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;新建工程&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer create-project laravel/laravel quickstart --prefer-dist
+&lt;span class=&quot;c&quot;&gt;# 或&lt;/span&gt;
+laravel new quickstart
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;克隆成品(可选)&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/laravel/quickstart-basic quickstart
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;quickstart
+composer install
+php artisan migrate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;准备数据库&lt;/h3&gt;
+
+&lt;h4 id=&quot;database-migrations&quot;&gt;Database Migrations&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用数据库Migrations来定义数据库的结构和编辑。&lt;/li&gt;
+  &lt;li&gt;使用一下命令生成一个新的数据库Migration：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:migration create_tasks_table --create&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;tasks
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;打开生成在&lt;code class=&quot;highlighter-rouge&quot;&gt;database/migrations&lt;/code&gt;下的文件，增加一个string列：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function up()
+{
+   Schema::create(&#39;tasks&#39;, function (Blueprint $table) {
+       $table-&amp;gt;increments(&#39;id&#39;);
+       $table-&amp;gt;string(&#39;name&#39;);
+       $table-&amp;gt;timestamps();
+   });
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;执行migrate：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan migrate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;eloquent&quot;&gt;Eloquent模型&lt;/h4&gt;
+
+&lt;p&gt;这是Laravel默认的ORM(Object-relation mapper)。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用以下命令为我们刚刚建立在&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks&lt;/code&gt;数据库中的&lt;code class=&quot;highlighter-rouge&quot;&gt;Task&lt;/code&gt;模型进行模型生成，生成的&lt;code class=&quot;highlighter-rouge&quot;&gt;Task.php&lt;/code&gt;位于&lt;code class=&quot;highlighter-rouge&quot;&gt;app&lt;/code&gt;目录下：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:model Task
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;路由&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;默认全部定义在&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/routes.php&lt;/code&gt;中。&lt;/li&gt;
+  &lt;li&gt;这里我们需要三种路由：查看任务列表、添加任务、删除任务。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;use App\Task;
+use Illuminate\Http\Request;
+
+Route::get(&#39;/&#39;, function () {
+    return view(&#39;tasks&#39;);   //位于resources/views/tasks.blade.php
+});
+
+Route::post(&#39;/task&#39;, function (Request $request) {
+    //
+});
+
+Route::delete(&#39;/task/{task}&#39;, function (Task $task) {
+    //
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;布局和视图&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;.blade.php&lt;/code&gt;代表使用Blade模板引擎。&lt;/li&gt;
+  &lt;li&gt;建立模板页&lt;code class=&quot;highlighter-rouge&quot;&gt;resources/views/layouts/app.blade.php&lt;/code&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;lang=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;en&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;Laravel Quickstart - Basic&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- CSS And JavaScript --&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;nav&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;navbar navbar-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Navbar Contents --&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/nav&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+        @yield(&#39;content&#39;)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;建立视图页&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;页：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@extends(&#39;layouts.app&#39;)
+
+@section(&#39;content&#39;)
+
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Bootstrap Boilerplate... --&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-body&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Display Validation Errors --&amp;gt;&lt;/span&gt;
+        @include(&#39;common.errors&#39;)
+
+        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- New Task Form --&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;POST&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-horizontal&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            
+
+            &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Task Name --&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-group&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;label&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;for=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;task&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-3 control-label&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Task&lt;span class=&quot;nt&quot;&gt;&amp;lt;/label&amp;gt;&lt;/span&gt;
+
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-6&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;name&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;task-name&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-control&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+            &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Add Task Button --&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-group&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-offset-3 col-sm-6&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;submit&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;btn btn-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;i&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;fa fa-plus&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/i&amp;gt;&lt;/span&gt; Add Task
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- TODO: Current Tasks --&amp;gt;&lt;/span&gt;
+@endsection
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;添加任务&lt;/h3&gt;
+
+&lt;h4 id=&quot;section-6&quot;&gt;表单验证&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::post&lt;/code&gt;函数：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::post(&#39;/task&#39;, function (Request $request) {
+    $validator = Validator::make($request-&amp;gt;all(), [
+        &#39;name&#39; =&amp;gt; &#39;required|max:255&#39;,
+    ]);
+
+    if ($validator-&amp;gt;fails()) {
+        return redirect(&#39;/&#39;)
+            -&amp;gt;withInput()
+            -&amp;gt;withErrors($validator);
+    }
+
+    // Create The Task...
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;注意，错误的输入和错误信息会在重定向到&lt;code class=&quot;highlighter-rouge&quot;&gt;/&lt;/code&gt;后放入到session，这样就可以保持用户的输入状态。&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;withErrors($validator)&lt;/code&gt;函数使得我们可以在view中通过&lt;code class=&quot;highlighter-rouge&quot;&gt;$errors&lt;/code&gt;访问出错信息。&lt;code class=&quot;highlighter-rouge&quot;&gt;common.errors&lt;/code&gt;被包含在了我们之前写的&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;页面中：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- resources/views/common/errors.blade.php --&amp;gt;&lt;/span&gt;
+
+@if (count($errors) &amp;gt; 0)
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Form Error List --&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;alert alert-danger&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;Whoops! Something went wrong!&lt;span class=&quot;nt&quot;&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;
+
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;&lt;/span&gt;
+
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;ul&amp;gt;&lt;/span&gt;
+            @foreach ($errors-&amp;gt;all() as $error)
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+            @endforeach
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+@endif
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-7&quot;&gt;创建任务&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;继续完善&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::post&lt;/code&gt;方法，保存正确的数据到数据库：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::post(&#39;/task&#39;, function (Request $request) {
+    $validator = Validator::make($request-&amp;gt;all(), [
+        &#39;name&#39; =&amp;gt; &#39;required|max:255&#39;,
+    ]);
+
+    if ($validator-&amp;gt;fails()) {
+        return redirect(&#39;/&#39;)
+            -&amp;gt;withInput()
+            -&amp;gt;withErrors($validator);
+    }
+
+    $task = new Task;
+    $task-&amp;gt;name = $request-&amp;gt;name;
+    $task-&amp;gt;save();
+
+    return redirect(&#39;/&#39;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-8&quot;&gt;查看所有任务&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;/&lt;/code&gt;路径：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;/&#39;, function () {
+    $tasks = Task::orderBy(&#39;created_at&#39;, &#39;asc&#39;)-&amp;gt;get();
+
+    return view(&#39;tasks&#39;, [
+        &#39;tasks&#39; =&amp;gt; $tasks
+    ]); //第二个参数：数组中每个key都可在视图模板中作为变量访问
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;编写&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@extends(&#39;layouts.app&#39;)
+
+@section(&#39;content&#39;)
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Create Task Form... --&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Current Tasks --&amp;gt;&lt;/span&gt;
+    @if (count($tasks) &amp;gt; 0)
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel panel-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-heading&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                Current Tasks
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-body&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;table&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;table table-striped task-table&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Table Headings --&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;thead&amp;gt;&lt;/span&gt;
+                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;Task&lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;&lt;span class=&quot;ni&quot;&gt;&amp;amp;nbsp;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/thead&amp;gt;&lt;/span&gt;
+
+                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Table Body --&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;tbody&amp;gt;&lt;/span&gt;
+                        @foreach ($tasks as $task)
+                            &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+                                &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Task Name --&amp;gt;&lt;/span&gt;
+                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;table-text&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&amp;gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+
+                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;
+                                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- TODO: Delete Button --&amp;gt;&lt;/span&gt;
+                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+                            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+                        @endforeach
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tbody&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    @endif
+@endsection
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-9&quot;&gt;删除任务&lt;/h3&gt;
+
+&lt;h4 id=&quot;section-10&quot;&gt;添加删除按钮&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;tr&amp;gt;
+    &amp;lt;!-- Task Name --&amp;gt;
+    &amp;lt;td class=&quot;table-text&quot;&amp;gt;
+        &amp;lt;div&amp;gt;&amp;lt;/div&amp;gt;
+    &amp;lt;/td&amp;gt;
+
+    &amp;lt;!-- Delete Button --&amp;gt;
+    &amp;lt;td&amp;gt;
+        &amp;lt;form action=&quot;&quot; method=&quot;POST&quot;&amp;gt;
+            
+            
+
+            &amp;lt;button type=&quot;submit&quot; class=&quot;btn btn-danger&quot;&amp;gt;
+                &amp;lt;i class=&quot;fa fa-trash&quot;&amp;gt;&amp;lt;/i&amp;gt; Delete
+            &amp;lt;/button&amp;gt;
+        &amp;lt;/form&amp;gt;
+    &amp;lt;/td&amp;gt;
+&amp;lt;/tr&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;注意，HTML表单的method只能是GET或者POST，所以这里不能用DELETE，而是用``生成&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;input type=&#39;hidden&#39; name=&#39;_method&#39; value=&#39;DELETE&#39;&lt;/code&gt;交给Laravel后台解析。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-11&quot;&gt;删除操作&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;/task/{task}&lt;/code&gt;，这里使用了model binding的方式自动去除{task}作为形参，表示要删除的对象。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::delete(&#39;/task/{task}&#39;, function (Task $task) {
+    $task-&amp;gt;delete();
+
+    return redirect(&#39;/&#39;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-12&quot;&gt;问题解决&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-13&quot;&gt;服务器无响应问题&lt;/h3&gt;
+
+&lt;p&gt;问题描述：访问 http://seckillphp.ifanze-local.cn/quickstart/public 提示服务器无响应。
+问题解决：记得给&lt;code class=&quot;highlighter-rouge&quot;&gt;storage&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;bootstrap/cache&lt;/code&gt;赋777权限。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-14&quot;&gt;路由无效&lt;/h3&gt;
+
+&lt;p&gt;问题描述：访问除主页外的地址，如http://seckillphp.ifanze-local.cn/quickstart/public/task，均显示404错误。
+问题解决：这个问题应该出现在第二次开启服务器之后，因为是apache的rewrite模块没有开启或者配置正确的问题：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;httpd.conf&lt;/code&gt;中取消下面一行前的注释：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;LoadModule rewrite_module modules/mod_rewrite.so
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;配置&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Directory&amp;gt;&lt;/code&gt;标签，使用：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AllowOverride all
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;task-list&quot;&gt;教程2：升级版的Task List&lt;/h2&gt;
+
+&lt;p&gt;与上一个项目相比，这个demo增加了用户登录和注册模块。这里只记录一些在这个教程中新学到的几项笔记。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;demo中，表单的URL是写死的，如&lt;code class=&quot;highlighter-rouge&quot;&gt;action=&#39;/task&#39;&lt;/code&gt;，这样对于我本机将网站根URL放在&lt;code class=&quot;highlighter-rouge&quot;&gt;http://seckillphp.ifanze-local.cn/quickstart/public&lt;/code&gt;位置上是不正确的。可以根据上一个教程的写法更正：&lt;code class=&quot;highlighter-rouge&quot;&gt;action=&quot;&quot;&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;框架已经自带了登录相关的Model配置，使用数据库Migration时会创建表&lt;code class=&quot;highlighter-rouge&quot;&gt;users&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;password_resets&lt;/code&gt;，以及&lt;code class=&quot;highlighter-rouge&quot;&gt;User&lt;/code&gt;Model。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code class=&quot;highlighter-rouge&quot;&gt;php artisan make:model Task&lt;/code&gt;创建的Model会默认使用名称为其复数形式的表。在Model的定义中，使用&lt;code class=&quot;highlighter-rouge&quot;&gt;$fillable&lt;/code&gt;属性指定使用”mass-assignable”的列，如：&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Task extends Model
+{
+    protected $fillable = [&#39;name&#39;];
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;为了表示user和tasks之间的一对多关系。需要在两个模型中进行相应的定义：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class User extends Authenticatable
+{
+    /**
+     * Get all of the tasks for the user.
+     */
+    public function tasks()
+    {
+        return $this-&amp;gt;hasMany(Task::class);
+    }
+}
+
+class Task extends Model
+{
+    /**
+     * Get the user that owns the task.
+     */
+    public function user()
+    {
+        return $this-&amp;gt;belongsTo(User::class);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;让Laravel自动生成登录注册相关的视图和路由，使用以下命令：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:auth
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;然后在&lt;code class=&quot;highlighter-rouge&quot;&gt;routes.php&lt;/code&gt;中调用&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::auth()&lt;/code&gt;。
+然后在&lt;code class=&quot;highlighter-rouge&quot;&gt;AuthController.php&lt;/code&gt;文件中配置：&lt;code class=&quot;highlighter-rouge&quot;&gt;protected $redirectTo = &#39;/tasks&#39;;&lt;/code&gt;
+然后在&lt;code class=&quot;highlighter-rouge&quot;&gt;Http/Middleware/RedirectIfAuthenticated.php&lt;/code&gt;中配置：&lt;code class=&quot;highlighter-rouge&quot;&gt;return redirect(&#39;/tasks&#39;);&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;创建Controller的指令：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:controller TaskController
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;配置路由指向Controller中的Method：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;/tasks&#39;, &#39;TaskController@index&#39;);
+Route::post(&#39;/task&#39;, &#39;TaskController@store&#39;);
+Route::delete(&#39;/task/{task}&#39;, &#39;TaskController@destroy&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用middleware来保证用户必须登录才能进入主页面：在controller的构造函数中，调用相应的middleware（所有可用的路由middleware在&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/Kernel.php&lt;/code&gt;中定义）：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function __construct()
+{
+   $this-&amp;gt;middleware(&#39;auth&#39;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果视图是按照文件夹分组的：&lt;code class=&quot;highlighter-rouge&quot;&gt;return view(&#39;tasks.index&#39;);&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;创建Task，这里的&lt;code class=&quot;highlighter-rouge&quot;&gt;user()&lt;/code&gt;可以自动设置新记录的&lt;code class=&quot;highlighter-rouge&quot;&gt;user_id&lt;/code&gt;值为当前登录用户的id。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function store(Request $request)
+{
+    $this-&amp;gt;validate($request, [
+        &#39;name&#39; =&amp;gt; &#39;required|max:255&#39;,
+    ]);
+
+    $request-&amp;gt;user()-&amp;gt;tasks()-&amp;gt;create([
+        &#39;name&#39; =&amp;gt; $request-&amp;gt;name,
+    ]);
+
+    return redirect(&#39;/tasks&#39;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;php&lt;/p&gt;
+
+&lt;p&gt;mb’ge&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 10 Jun 2016 02:12:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%B8%89-%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%B8%89-%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B/</guid>
+        
+        <category>PHP</category>
+        
+        
+        <category>笔记</category>
+        
+      </item>
     
       <item>
         <title>【慕课网】Java高并发秒杀API（四）：高并发优化</title>
@@ -143,54 +1050,94 @@
       </item>
     
       <item>
-        <title>Laravel v5.2 框架学习笔记</title>
+        <title>Laravel v5.2 框架学习笔记（二）：架构</title>
+        <description>&lt;p&gt;注：官网这一部分的教程比较晦涩，自己花了点钱买了&lt;a href=&quot;laravist.com&quot;&gt;Laravist.com&lt;/a&gt;网站上的&lt;a href=&quot;https://laravist.com/series/peak-into-laravel-core-components&quot;&gt;理解 Laravel 核心概念&lt;/a&gt;视频看了看就有些眉目了。&lt;/p&gt;
+
+&lt;h2 id=&quot;request-lifecycle&quot;&gt;Request Lifecycle&lt;/h2&gt;
+
+&lt;h2 id=&quot;application-structure&quot;&gt;Application Structure&lt;/h2&gt;
+
+&lt;h2 id=&quot;service-providers&quot;&gt;Service Providers&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;config/app.php&lt;/code&gt;的&lt;code class=&quot;highlighter-rouge&quot;&gt;providers&lt;/code&gt;数组里可以找到所有会加载的Service Providers，大多数只会在使用时加载（deferred）。&lt;/li&gt;
+  &lt;li&gt;所有Service Providers都继承自&lt;code class=&quot;highlighter-rouge&quot;&gt;Illuminate\Support\ServiceProvider&lt;/code&gt;类，需要至少定义&lt;code class=&quot;highlighter-rouge&quot;&gt;register&lt;/code&gt;方法，在其中你应该仅仅进行一些绑定操作，并且不应该注册任何的事件监听器、路由、功能模块等。否则，你可能意外地使用由service provider提供的没有加载的服务。&lt;/li&gt;
+  &lt;li&gt;可以用以下命令生成新的provider：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:provider RiakServiceProvider 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;service-container&quot;&gt;Service Container&lt;/h2&gt;
+
+&lt;h2 id=&quot;contracts&quot;&gt;Contracts&lt;/h2&gt;
+
+&lt;h2 id=&quot;facades&quot;&gt;Facades&lt;/h2&gt;
+
+</description>
+        <pubDate>Fri, 27 May 2016 02:12:40 +0800</pubDate>
+        <link>http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BA%8C-%E6%9E%B6%E6%9E%84/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BA%8C-%E6%9E%B6%E6%9E%84/</guid>
+        
+        <category>PHP</category>
+        
+        
+        <category>笔记</category>
+        
+      </item>
+    
+      <item>
+        <title>Laravel v5.2 框架学习笔记（一）：基础</title>
         <description>&lt;p&gt;注：写完上一篇ThinkPHP框架，再写一篇Laravel框架的学习笔记感觉好怪异。主要是因为在知乎上看到了一些PHP框架相关的讨论，有很多人力推Laravel，又说ThinkPHP哪里怎么怎么不合理，代码质量一般，风格糟糕等等……然后就打开Laravel官网看了一眼，仅仅是打开看了一眼，我就决定抛弃掉ThinkPHP转投看着很高大上的Laravel了！！&lt;/p&gt;
 
 &lt;p&gt;注2：新开一段理智下来，Laravel更显专业、成熟，学着更具挑战性，我还可能会从其优秀的代码风格中受益，框架自身也足够稳定。当然也不是说ThinkPHP就不好，或许用来写一般的应用同样简洁高效，并且是国产基因，有中文文档，这些都是他的优点。&lt;/p&gt;
 
 &lt;p&gt;注3：这里记录下官方文档里最基础的几篇，可以快速入门，了解基本运行流程并新建一个涉及简单数据库读写的站点。&lt;/p&gt;
 
-&lt;h2 id=&quot;section&quot;&gt;安装&lt;/h2&gt;
+&lt;h2 id=&quot;laravel&quot;&gt;安装并创建Laravel项目&lt;/h2&gt;
 
-&lt;p&gt;需要使用Composer，这个在上次装ThinkPHP的时候已经装了。不使用国内的镜像的话安装速度会很慢。
-- 使用Laravel installer：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;需要使用Composer。这个在上次装ThinkPHP的时候已经装了。不使用国内的镜像的话安装速度会很慢。&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer global require &lt;span class=&quot;s2&quot;&gt;&quot;laravel/install&quot;&lt;/span&gt;   &lt;span class=&quot;c&quot;&gt;# laravel会被安装到：~/.composer/verdor/bin，把它加入PATH&lt;/span&gt;
-laravel new blog    &lt;span class=&quot;c&quot;&gt;# 创建一个项目，目录名称为blog&lt;/span&gt;
+&lt;h3 id=&quot;laravel-installer&quot;&gt;方式一：使用Laravel installer创建项目&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer global require &lt;span class=&quot;s2&quot;&gt;&quot;laravel/install&quot;&lt;/span&gt;   &lt;span class=&quot;c&quot;&gt;#laravel会被安装到：~/.composer/verdor/bin，把它加入PATH&lt;/span&gt;
+laravel new blog    &lt;span class=&quot;c&quot;&gt;#创建一个项目，目录名称为blog&lt;/span&gt;
+laravel new         &lt;span class=&quot;c&quot;&gt;#如果新建了一个Git库，并想让laravel生成在库的根目录下，使用这个语句&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;ul&gt;
-  &lt;li&gt;使用composer create-project：&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h3 id=&quot;composer-create-project&quot;&gt;方式二：使用composer create-project&lt;/h3&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer create-project --prefer-dist laravel/laravel blog
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h2 id=&quot;section-1&quot;&gt;配置&lt;/h2&gt;
+&lt;h2 id=&quot;section&quot;&gt;第一次运行&lt;/h2&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;配置文件位于&lt;code class=&quot;highlighter-rouge&quot;&gt;config&lt;/code&gt;目录。&lt;/li&gt;
-  &lt;li&gt;可能要配置Web服务器对&lt;code class=&quot;highlighter-rouge&quot;&gt;storage&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;bootstrap/cache&lt;/code&gt;目录的访问权限。&lt;/li&gt;
-  &lt;li&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;.env&lt;/code&gt;里设置32字符长的Application Kye。&lt;/li&gt;
+  &lt;li&gt;在Apache中新建虚拟主机，配置网站的根目录为所创建项目下的&lt;code class=&quot;highlighter-rouge&quot;&gt;public&lt;/code&gt;目录。具体方法见之前写的博客（编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;httpd-vhosts.conf&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/hosts&lt;/code&gt;文件）。&lt;/li&gt;
+  &lt;li&gt;要配置&lt;code class=&quot;highlighter-rouge&quot;&gt;storage&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;bootstrap/cache&lt;/code&gt;目录的访问权限，至少755。&lt;/li&gt;
+  &lt;li&gt;在浏览器访问配置的主机名进行测试：
+&lt;img src=&quot;/images/posts/14647055338077.jpg&quot; alt=&quot;&quot; /&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&quot;section-2&quot;&gt;配置的访问&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$value = config(&#39;app.timezone&#39;);                //可以再设置默认值
-config([&#39;app.timezone&#39; =&amp;gt; &#39;America/Chicago&#39;]);  //运行时更改设置
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&quot;section-3&quot;&gt;环境配置&lt;/h3&gt;
+&lt;h2 id=&quot;section-1&quot;&gt;环境配置&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;.env&lt;/code&gt;中配置环境信息，其中&lt;code class=&quot;highlighter-rouge&quot;&gt;APP_ENV&lt;/code&gt;即是环境名。&lt;/li&gt;
-  &lt;li&gt;配置会读取到&lt;code class=&quot;highlighter-rouge&quot;&gt;$_ENV&lt;/code&gt;里，可以用&lt;code class=&quot;highlighter-rouge&quot;&gt;env(&#39;APP_DEBUG&#39;, false)&lt;/code&gt;的形式读取。第二个参数是默认值。&lt;/li&gt;
-  &lt;li&gt;这个文件不要使用版本控制，而应该添加&lt;code class=&quot;highlighter-rouge&quot;&gt;.env.example&lt;/code&gt;。&lt;/li&gt;
-  &lt;li&gt;可以在代码中这样进行判断当前的环境：&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;.env&lt;/code&gt;不要使用版本控制，而应该使用&lt;code class=&quot;highlighter-rouge&quot;&gt;.env.example&lt;/code&gt;。&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;环境配置的读取&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;env(&#39;APP_DEBUG&#39;, false)     //第二个参数为默认值
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;判断当前环境&lt;/h3&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$environment = App::environment();
 //或者
@@ -202,8 +1149,40 @@ $environment = app()-&amp;gt;environment();
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
+&lt;h2 id=&quot;section-4&quot;&gt;项目配置&lt;/h2&gt;
+
 &lt;ul&gt;
-  &lt;li&gt;为了提升性能，在生产环境中定期运行&lt;code class=&quot;highlighter-rouge&quot;&gt;php artisan config:cache&lt;/code&gt;命令将配置文件转成单个文件，在开发环境中不用。&lt;/li&gt;
+  &lt;li&gt;配置文件位于&lt;code class=&quot;highlighter-rouge&quot;&gt;config&lt;/code&gt;目录。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;配置的访问&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$value = config(&#39;app.timezone&#39;);                //可以再设置默认值
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;临时改变项目配置&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;config([&#39;app.timezone&#39; =&amp;gt; &#39;America/Chicago&#39;]);  
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-7&quot;&gt;项目维护&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-8&quot;&gt;缓存的使用&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;为了提升性能，在生产环境中定期运行下面的命令可以将配置文件转成单个文件，在开发环境中不要用。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan config:cache
+php artisan config:clear
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-9&quot;&gt;开启维护模式&lt;/h3&gt;
+
+&lt;ul&gt;
   &lt;li&gt;开启Maintenance Mode，可以对所有请求展示一个自定义视图，默认是&lt;code class=&quot;highlighter-rouge&quot;&gt;resources/views/errors/503.blade.php&lt;/code&gt;。应在系统维护期使用。（&lt;a href=&quot;https://laravel.com/docs/5.2/configuration#maintenance-mode&quot;&gt;更多：关于队列任务和zero-downtime发布的实现&lt;/a&gt;）开启和关闭的指令分别是：&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -212,393 +1191,1155 @@ php artisan up
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h2 id=&quot;homestead&quot;&gt;Homestead&lt;/h2&gt;
-
-&lt;p&gt;一个开发用的虚拟机，感觉很厉害的样子。&lt;a href=&quot;https://laravel.com/docs/5.2/homestead&quot;&gt;更多相关&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;valet&quot;&gt;Valet&lt;/h2&gt;
-
-&lt;p&gt;一个Mac上开发用的虚拟机，好像比上面一个还好用。&lt;a href=&quot;https://laravel.com/docs/5.2/valet&quot;&gt;更多相关&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;basic-task-list&quot;&gt;教程：Basic Task List&lt;/h2&gt;
-
-&lt;h3 id=&quot;section-4&quot;&gt;新建工程&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer create-project laravel/laravel quickstart --prefer-dist
-&lt;span class=&quot;c&quot;&gt;# 或&lt;/span&gt;
-laravel new quickstart
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&quot;section-5&quot;&gt;克隆成品(可选)&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/laravel/quickstart-basic quickstart
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;quickstart
-composer install
-php artisan migrate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&quot;section-6&quot;&gt;准备数据库&lt;/h3&gt;
-
-&lt;h4 id=&quot;database-migrations&quot;&gt;Database Migrations&lt;/h4&gt;
+&lt;h2 id=&quot;section-10&quot;&gt;路由&lt;/h2&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;使用数据库Migrations来定义数据库的结构和编辑。&lt;/li&gt;
-  &lt;li&gt;使用一下命令生成一个新的数据库Migration：&lt;/li&gt;
+  &lt;li&gt;定义在&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/routes.php&lt;/code&gt;。&lt;/li&gt;
+  &lt;li&gt;支持的HTTP verb：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:migration create_tasks_table --create&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;tasks
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get($uri, $callback);
+Route::post($uri, $callback);
+Route::put($uri, $callback);
+Route::patch($uri, $callback);
+Route::delete($uri, $callback);
+Route::options($uri, $callback);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;打开生成在&lt;code class=&quot;highlighter-rouge&quot;&gt;database/migrations&lt;/code&gt;下的文件，增加一个string列：&lt;/li&gt;
+  &lt;li&gt;如果希望支持多个或者任意HTTP verb：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function up()
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::match([&#39;get&#39;, &#39;post&#39;], &#39;/&#39;, $callback);
+Route::any(&#39;/&#39;, $callback);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$callback&lt;/code&gt;既可以是匿名函数，也可以指定控制器下的方法，如：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;/&#39;, HomeController@index);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-11&quot;&gt;路由的参数&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;必选参数：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;posts/{post}/comments/{comment}&#39;, function ($postId, $commentId) {
+    //
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可选参数：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;user/{name?}&#39;, function ($name = null) {
+    //注意，$name要有默认值
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用正则表达式对参数进行限制：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;user/{id}/{name}&#39;, function ($id, $name) {
+    //
+})
+-&amp;gt;where([&#39;id&#39; =&amp;gt; &#39;[0-9]+&#39;, &#39;name&#39; =&amp;gt; &#39;[a-z]+&#39;]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用正则表达式在项目全局范围内限制某参数：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 位于：app/Providers/RouteServiceProvider.php
+public function boot(Router $router)
 {
-   Schema::create(&#39;tasks&#39;, function (Blueprint $table) {
-       $table-&amp;gt;increments(&#39;id&#39;);
-       $table-&amp;gt;string(&#39;name&#39;);
-       $table-&amp;gt;timestamps();
-   });
+    $router-&amp;gt;pattern(&#39;id&#39;, &#39;[0-9]+&#39;);
+    parent::boot($router);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-12&quot;&gt;命名路由&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;三种方式：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;user/profile&#39;, [&#39;as&#39; =&amp;gt; &#39;profile&#39;, function () {
+    //
+}]);
+
+Route::get(&#39;user/profile&#39;, [
+    &#39;as&#39; =&amp;gt; &#39;profile&#39;, &#39;uses&#39; =&amp;gt; &#39;UserController@showProfile&#39;
+]);
+
+Route::get(&#39;user/profile&#39;, &#39;UserController@showProfile&#39;)-&amp;gt;name(&#39;profile&#39;);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;继而可以进行路由分组：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;as&#39; =&amp;gt; &#39;admin::&#39;], function () {
+    Route::get(&#39;dashboard&#39;, [&#39;as&#39; =&amp;gt; &#39;dashboard&#39;, function () {
+        // Route named &quot;admin::dashboard&quot;
+    }]);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;利用路由名称得到URL或进行重定向：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$url = route(&#39;profile&#39;);
+$url = route(&#39;profile&#39;, [&#39;id&#39; =&amp;gt; 1]);   //带参数的写法
+
+return redirect()-&amp;gt;route(&#39;profile&#39;);    //重定向
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-13&quot;&gt;路由分组的常见用途&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;公共的中间件：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;middleware&#39; =&amp;gt; &#39;auth&#39;], function () {
+    Route::get(&#39;/&#39;, function ()    {
+        // Uses Auth Middleware
+    });
+
+    Route::get(&#39;user/profile&#39;, function () {
+        // Uses Auth Middleware
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;公共的命名空间（不用指定前缀&lt;code class=&quot;highlighter-rouge&quot;&gt;App\Http\Controllers&lt;/code&gt;）：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;namespace&#39; =&amp;gt; &#39;Admin&#39;], function()
+{
+    // Controllers Within The &quot;App\Http\Controllers\Admin&quot; Namespace
+
+    Route::group([&#39;namespace&#39; =&amp;gt; &#39;User&#39;], function() {
+        // Controllers Within The &quot;App\Http\Controllers\Admin\User&quot; Namespace
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;公共的子域名：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;domain&#39; =&amp;gt; &#39;{account}.myapp.com&#39;], function () {
+    Route::get(&#39;user/{id}&#39;, function ($account, $id) {
+        //
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;公共的路由前缀：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;prefix&#39; =&amp;gt; &#39;admin&#39;], function () {
+    Route::get(&#39;users&#39;, function ()    {
+        // Matches The &quot;/admin/users&quot; URL
+    });
+});
+
+Route::group([&#39;prefix&#39; =&amp;gt; &#39;accounts/{account_id}&#39;], function () {
+    Route::get(&#39;detail&#39;, function ($accountId)    {
+        // Matches The &quot;/accounts/{account_id}/detail&quot; URL
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;csrf&quot;&gt;CSRF的防御&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;关于CSRF（Cross-site request forgery，跨站请求伪造）：&lt;a href=&quot;http://www.cnblogs.com/hyddd/archive/2009/04/09/1432744.html&quot;&gt;查看详情&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;在表单中使用：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;等价于：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;input type=&quot;hidden&quot; name=&quot;_token&quot; value=&quot;&amp;lt;?php echo csrf_token(); ?&amp;gt;&quot;&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;web中间件组中的VerifyCsrfToken中间件会帮助你完成认证工作。&lt;/li&gt;
+  &lt;li&gt;如果想排除对某些URI使用CSRF保护，可以defining their routes outside of the web middleware group that is included in the default routes.php file，或者编辑：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// app/Http/Middleware/VerifyCsrfToken.php
+protected $except = [
+   &#39;stripe/*&#39;,
+];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;X-CSRF-TOKEN&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;X-XSRF-TOKEN&lt;/code&gt;就不说了，用到时再去了解吧。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-14&quot;&gt;路由中的模型绑定&lt;/h3&gt;
+
+&lt;h4 id=&quot;section-15&quot;&gt;隐式绑定&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Laravel会自动寻找到ID与&lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;匹配的&lt;code class=&quot;highlighter-rouge&quot;&gt;User&lt;/code&gt;模型实例，如果找不到，会返回404。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;api/users/{user}&#39;, function (App\User $user) {
+    return $user-&amp;gt;email;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果并不使用&lt;code class=&quot;highlighter-rouge&quot;&gt;id&lt;/code&gt;列进行查找，可以在model中重写：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function getRouteKeyName()
+{
+    return &#39;slug&#39;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-16&quot;&gt;显式绑定&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果要将参数名和模型绑定，编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;RouteServiceProvider::boot&lt;/code&gt;方法：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function boot(Router $router)
+{
+    parent::boot($router);
+    //将{user}绑定到App\User，默认寻找的是id列
+    $router-&amp;gt;model(&#39;user&#39;, &#39;App\User&#39;);
 }
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;执行migrate：&lt;/li&gt;
+  &lt;li&gt;如果要自定义寻找规则，编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;routes.php&lt;/code&gt;文件，增加：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan migrate
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$router-&amp;gt;bind(&#39;user&#39;, function ($value) {
+    return App\User::where(&#39;name&#39;, $value)-&amp;gt;first();
+});
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h4 id=&quot;eloquent&quot;&gt;Eloquent模型&lt;/h4&gt;
-
-&lt;p&gt;这是Laravel默认的ORM(Object-relation mapper)。&lt;/p&gt;
-
 &lt;ul&gt;
-  &lt;li&gt;使用以下命令为我们刚刚建立在&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks&lt;/code&gt;数据库中的&lt;code class=&quot;highlighter-rouge&quot;&gt;Task&lt;/code&gt;模型进行模型生成，生成的&lt;code class=&quot;highlighter-rouge&quot;&gt;Task.php&lt;/code&gt;位于&lt;code class=&quot;highlighter-rouge&quot;&gt;app&lt;/code&gt;目录下：&lt;/li&gt;
+  &lt;li&gt;如果要自定义”not found“行为，就新增第三个参数：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:model Task
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$router-&amp;gt;model(&#39;user&#39;, &#39;App\User&#39;, function () {
+    throw new NotFoundHttpException;
+});
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&quot;section-7&quot;&gt;路由&lt;/h3&gt;
+&lt;h3 id=&quot;putdeleteput&quot;&gt;表单提交模拟PUT/DELETE/PUT等&lt;/h3&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;默认全部定义在&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/routes.php&lt;/code&gt;中。&lt;/li&gt;
-  &lt;li&gt;这里我们需要三种路由：查看任务列表、添加任务、删除任务。&lt;/li&gt;
+  &lt;li&gt;使用以下三种方式之一：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;use App\Task;
-use Illuminate\Http\Request;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;input type=&quot;hidden&quot; name=&quot;_method&quot; value=&quot;PUT&quot;&amp;gt;
+&amp;lt;?php echo method_field(&#39;PUT&#39;); ?&amp;gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-17&quot;&gt;查看当前路由&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$route = Route::current();
+$name = $route-&amp;gt;getName();
+$actionName = $route-&amp;gt;getActionName();
+//或
+$name = Route::currentRouteName();
+$action = Route::currentRouteAction();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-18&quot;&gt;中间件&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-19&quot;&gt;创建中间件&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:middleware AgeMiddleware
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;会自动生成：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function handle($request, Closure $next)
+{
+   return $next($request);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;使用示例：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function handle($request, Closure $next)
+{
+   if ($request-&amp;gt;input(&#39;age&#39;) &lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;= 200) {
+       return redirect(&#39;home&#39;);
+   }
+   return $next($request);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;beforeafter&quot;&gt;两种中间件：Before/After&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function handle($request, Closure $next)
+{
+   // Perform action
+   return $next($request);
+}
+
+public function handle($request, Closure $next)
+{
+   $response = $next($request);
+   // Perform action
+   return $response;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-20&quot;&gt;注册中间件&lt;/h3&gt;
+
+&lt;h4 id=&quot;section-21&quot;&gt;全局中间件&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/Kernel.php&lt;/code&gt;中的&lt;code class=&quot;highlighter-rouge&quot;&gt;$middleware&lt;/code&gt;属性，让所有请求都使用中间件。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-22&quot;&gt;分配中间件给路由&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;首先在&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/Kernel.php&lt;/code&gt;中的&lt;code class=&quot;highlighter-rouge&quot;&gt;$routeMiddleware&lt;/code&gt;中注册个名字。&lt;/li&gt;
+  &lt;li&gt;四种方式分配：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;admin/profile&#39;, [&#39;middleware&#39; =&amp;gt; &#39;auth&#39;, function () {
+}]);
+
+Route::get(&#39;/&#39;, [&#39;middleware&#39; =&amp;gt; [&#39;first&#39;, &#39;second&#39;], function () {
+}]);
 
 Route::get(&#39;/&#39;, function () {
-    return view(&#39;tasks&#39;);   //位于resources/views/tasks.blade.php
-});
+})-&amp;gt;middleware([&#39;first&#39;, &#39;second&#39;]);
 
-Route::post(&#39;/task&#39;, function (Request $request) {
+use App\Http\Middleware\FooMiddleware;
+Route::get(&#39;admin/profile&#39;, [&#39;middleware&#39; =&amp;gt; FooMiddleware::class, function () {
+}]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-23&quot;&gt;中间件分组&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;app/Http/Kernel.php&lt;/code&gt;中的&lt;code class=&quot;highlighter-rouge&quot;&gt;$middlewareGroups&lt;/code&gt;属性。默认创建了&lt;code class=&quot;highlighter-rouge&quot;&gt;web&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;api&lt;/code&gt;两个分组。&lt;/li&gt;
+  &lt;li&gt;可以将中间件组分配给路由：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::group([&#39;middleware&#39; =&amp;gt; [&#39;web&#39;]], function () {
     //
 });
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
-Route::delete(&#39;/task/{task}&#39;, function (Task $task) {
+&lt;p&gt;注意：web中间件已经自动应用到了所有路由，在&lt;code class=&quot;highlighter-rouge&quot;&gt;RouteServiceProvider&lt;/code&gt;里。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-24&quot;&gt;中间件参数&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如用户权限的判断，在&lt;code class=&quot;highlighter-rouge&quot;&gt;$next&lt;/code&gt;后新增参数：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public function handle($request, Closure $next, $role)
+{
+   if (! $request-&amp;gt;user()-&amp;gt;hasRole($role)) {
+       // Redirect...
+   }
+   return $next($request);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在路由定义中指定参数，用冒号将中间件名和参数分开，过个参数用逗号分开：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::put(&#39;post/{id}&#39;, [&#39;middleware&#39; =&amp;gt; &#39;role:editor&#39;, function ($id) {
     //
-});
+}]);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&quot;section-8&quot;&gt;布局和视图&lt;/h3&gt;
+&lt;h3 id=&quot;terminable-middleware&quot;&gt;有终止的中间件（Terminable Middleware）&lt;/h3&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;.blade.php&lt;/code&gt;代表使用Blade模板引擎。&lt;/li&gt;
-  &lt;li&gt;建立模板页&lt;code class=&quot;highlighter-rouge&quot;&gt;resources/views/layouts/app.blade.php&lt;/code&gt;：&lt;/li&gt;
+  &lt;li&gt;如果要在HTTP响应发送之后做一些事情，就要添加&lt;code class=&quot;highlighter-rouge&quot;&gt;terminate($request, $response)&lt;/code&gt;方法，还需要将它在HTTP Kernel中添加到全局中间件。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;lang=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;en&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;Laravel Quickstart - Basic&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- CSS And JavaScript --&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;nav&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;navbar navbar-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Navbar Contents --&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/nav&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-
-        @yield(&#39;content&#39;)
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;建立视图页&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;页：&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@extends(&#39;layouts.app&#39;)
-
-@section(&#39;content&#39;)
-
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Bootstrap Boilerplate... --&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-body&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Display Validation Errors --&amp;gt;&lt;/span&gt;
-        @include(&#39;common.errors&#39;)
-
-        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- New Task Form --&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;POST&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-horizontal&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-            
-
-            &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Task Name --&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-group&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;label&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;for=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;task&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-3 control-label&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Task&lt;span class=&quot;nt&quot;&gt;&amp;lt;/label&amp;gt;&lt;/span&gt;
-
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-6&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;name&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;task-name&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-control&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-
-            &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Add Task Button --&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;form-group&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;col-sm-offset-3 col-sm-6&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;submit&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;btn btn-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;i&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;fa fa-plus&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/i&amp;gt;&lt;/span&gt; Add Task
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- TODO: Current Tasks --&amp;gt;&lt;/span&gt;
-@endsection
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&quot;section-9&quot;&gt;添加任务&lt;/h3&gt;
-
-&lt;h4 id=&quot;section-10&quot;&gt;表单验证&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::post&lt;/code&gt;函数：&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::post(&#39;/task&#39;, function (Request $request) {
-    $validator = Validator::make($request-&amp;gt;all(), [
-        &#39;name&#39; =&amp;gt; &#39;required|max:255&#39;,
-    ]);
-
-    if ($validator-&amp;gt;fails()) {
-        return redirect(&#39;/&#39;)
-            -&amp;gt;withInput()
-            -&amp;gt;withErrors($validator);
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class StartSession
+{
+    public function handle($request, Closure $next)
+    {
+        return $next($request);
     }
 
-    // Create The Task...
-});
+    public function terminate($request, $response)
+    {
+        // Store the session data...
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;注意：执行&lt;code class=&quot;highlighter-rouge&quot;&gt;handle&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;terminate&lt;/code&gt;的方法的是服务容器中的两个中间件实例，如果想单例调用，要在容器中使用它的&lt;code class=&quot;highlighter-rouge&quot;&gt;singleton&lt;/code&gt;方法注册中间件。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-25&quot;&gt;控制器&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-26&quot;&gt;基本控制器&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//定义控制器
+class UserController extends Controller
+{
+    public function showProfile($id)
+    {
+        return view(&#39;user.profile&#39;, [&#39;user&#39; =&amp;gt; User::findOrFail($id)]);
+    }
+}
+
+//添加路由
+Route::get(&#39;user/{id}&#39;, &#39;UserController@showProfile&#39;);  //这里可以省略命名空间，全写是&#39;App\Http\Controllers\UserController&#39;
+
+//命名路由
+Route::get(&#39;foo&#39;, [&#39;uses&#39; =&amp;gt; &#39;FooController@method&#39;, &#39;as&#39; =&amp;gt; &#39;name&#39;]);
+//根据路由名字得出Url
+$url = route(&#39;name&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-27&quot;&gt;控制器上应用中间件&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//方法1
+Route::get(&#39;profile&#39;, [
+    &#39;middleware&#39; =&amp;gt; &#39;auth&#39;,
+    &#39;uses&#39; =&amp;gt; &#39;UserController@showProfile&#39;
+]);
+
+//方法2：在控制器构造函数使用`middleware`函数，甚至可以只对控制器中的个别方法应用中间件
+class UserController extends Controller
+{
+    public function __construct()
+    {
+        $this-&amp;gt;middleware(&#39;auth&#39;);
+
+        $this-&amp;gt;middleware(&#39;log&#39;, [&#39;only&#39; =&amp;gt; [
+            &#39;fooAction&#39;,
+            &#39;barAction&#39;,
+        ]]);
+
+        $this-&amp;gt;middleware(&#39;subscribed&#39;, [&#39;except&#39; =&amp;gt; [
+            &#39;fooAction&#39;,
+            &#39;barAction&#39;,
+        ]]);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;restful&quot;&gt;RESTful资源控制器&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;创建：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan make:controller PhotoController --resource
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;注意，错误的输入和错误信息会在重定向到&lt;code class=&quot;highlighter-rouge&quot;&gt;/&lt;/code&gt;后放入到session，这样就可以保持用户的输入状态。&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;withErrors($validator)&lt;/code&gt;函数使得我们可以在view中通过&lt;code class=&quot;highlighter-rouge&quot;&gt;$errors&lt;/code&gt;访问出错信息。&lt;code class=&quot;highlighter-rouge&quot;&gt;common.errors&lt;/code&gt;被包含在了我们之前写的&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;页面中：&lt;/li&gt;
+  &lt;li&gt;注册路由：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- resources/views/common/errors.blade.php --&amp;gt;&lt;/span&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//全部
+Route::resource(&#39;photo&#39;, &#39;PhotoController&#39;);
 
-@if (count($errors) &amp;gt; 0)
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Form Error List --&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;alert alert-danger&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;Whoops! Something went wrong!&lt;span class=&quot;nt&quot;&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;
+//个别
+Route::resource(&#39;photo&#39;, &#39;PhotoController&#39;, [&#39;only&#39; =&amp;gt; [
+    &#39;index&#39;, &#39;show&#39;
+]]);
+Route::resource(&#39;photo&#39;, &#39;PhotoController&#39;, [&#39;except&#39; =&amp;gt; [
+    &#39;create&#39;, &#39;store&#39;, &#39;update&#39;, &#39;destroy&#39;
+]]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;/images/posts/14653777955891.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;&lt;/span&gt;
+&lt;ul&gt;
+  &lt;li&gt;如果不想要默认的Route Name：&lt;/li&gt;
+&lt;/ul&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;ul&amp;gt;&lt;/span&gt;
-            @foreach ($errors-&amp;gt;all() as $error)
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-            @endforeach
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::resource(&#39;photo&#39;, &#39;PhotoController&#39;, [&#39;names&#39; =&amp;gt; [
+    &#39;create&#39; =&amp;gt; &#39;photo.build&#39;
+]]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果不想要默认的路由参数名（默认是根据资源名）：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//对应：/user/{admin_user}
+Route::resource(&#39;user&#39;, &#39;AdminUserController&#39;, [&#39;parameters&#39; =&amp;gt; [
+    &#39;user&#39; =&amp;gt; &#39;admin_user&#39;
+]]);
+
+//单数化参数，对应：/users/{user}/photos/{photo}
+Route::resource(&#39;users.photos&#39;, &#39;PhotoController&#39;, [
+    &#39;parameters&#39; =&amp;gt; &#39;singular&#39;
+]);
+
+//统一配置对应参数：
+Route::resourceParameters([
+    &#39;user&#39; =&amp;gt; &#39;person&#39;, &#39;photo&#39; =&amp;gt; &#39;image&#39;
+]);
+
+//全局配置使用单数化
+Route::singularResourceParameters();
+
+//优先级依次降低（前两种相同）
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果要新增更多的action，要写在&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::resource&lt;/code&gt;之前：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;photos/popular&#39;, &#39;PhotoController@method&#39;);
+Route::resource(&#39;photos&#39;, &#39;PhotoController&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-28&quot;&gt;依赖注入与控制器&lt;/h3&gt;
+
+&lt;h4 id=&quot;section-29&quot;&gt;构造函数注入&lt;/h4&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;namespace App\Http\Controllers;
+use App\Repositories\UserRepository;
+class UserController extends Controller
+{
+    protected $users;
+    
+    public function __construct(UserRepository $users)
+    {
+        $this-&amp;gt;users = $users;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;注：如果容器可以解析，你就可以指定任意Laravel contract。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-30&quot;&gt;方法注入&lt;/h4&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//注入Illuminate\Http\Request
+use Illuminate\Http\Request;
+class UserController extends Controller
+{
+    public function store(Request $request)
+    {
+        $name = $request-&amp;gt;input(&#39;name&#39;);
+        //
+    }
+}
+
+//如果路由需要参数
+Route::put(&#39;user/{id}&#39;, &#39;UserController@update&#39;);
+class UserController extends Controller
+{
+    public function update(Request $request, $id)
+    {
+        
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-31&quot;&gt;路由缓存&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;缓存不适用于闭包路由&lt;/li&gt;
+  &lt;li&gt;使用缓存可以减少路由注册所花费的时间，甚至可以提速100%。同样别在开发环境用。&lt;/li&gt;
+  &lt;li&gt;使用以下命令开关：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;php artisan route:cache
+php artisan route:clear
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-32&quot;&gt;请求&lt;/h2&gt;
+
+&lt;h3 id=&quot;request&quot;&gt;访问Request&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+class UserController extends Controller
+{
+    public function update(Request $request, $id)   //id传自路由
+    {
+        
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-33&quot;&gt;基本请求信息&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$request-&amp;gt;path();           //返回格式：&quot;/foo/bar&quot;
+$request-&amp;gt;url();            //返回格式：&quot;http://domain.com/foo&quot;
+$request-&amp;gt;fullUrl();        //返回格式：&quot;http://domain.com/foo?bar=baz&quot;
+$request-&amp;gt;fullUrlWithQuery([&#39;bar&#39; =&amp;gt; &#39;baz&#39;]);   //返回格式：&quot;http://domain.com/foo?bar=baz&quot;
+$request-&amp;gt;is(&#39;admin/*&#39;);    //返回true或false
+$request-&amp;gt;isMethod(&#39;post&#39;); //返回true或false
+
+$name = $request-&amp;gt;input(&#39;name&#39;);            //不管get/post
+$name = $request-&amp;gt;input(&#39;name&#39;, &#39;Sally&#39;);   //带默认值
+$name = $request-&amp;gt;input(&#39;products.0.name&#39;); //读入数组中的某个特定元素
+$names = $request-&amp;gt;input(&#39;products.*.name&#39;);//读入数组
+$name = $request-&amp;gt;input(&#39;user.name&#39;);       //读取Json格式的请求，需要Content-Type是&quot;Json&quot;
+$request-&amp;gt;has(&#39;name&#39;);                      //判断
+$request-&amp;gt;all();                            //读入所有数据为数组
+$input = $request-&amp;gt;only([&#39;username&#39;, &#39;password&#39;]);  //读入部分数据为数组
+$input = $request-&amp;gt;only(&#39;username&#39;, &#39;password&#39;);
+$input = $request-&amp;gt;except([&#39;credit_card&#39;]);
+$input = $request-&amp;gt;except(&#39;credit_card&#39;);
+
+$name = $request-&amp;gt;name;                     //利用动态属性访问，Laravel会首先匹配请求参数，再匹配路由参数
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;laravelpsr-7&quot;&gt;将经典Laravel请求和响应转成PSR-7&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装以下库：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;composer require symfony/psr-http-message-bridge
+composer require zendframework/zend-diactoros
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;格式：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;use Psr\Http\Message\ServerRequestInterface;
+Route::get(&#39;/&#39;, function (ServerRequestInterface $request) {
+    //返回的PSR-7响应会自动转成经典Laravel响应。
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-34&quot;&gt;将输入保存到下次请求&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//将输入存入Session
+$request-&amp;gt;flash();
+$request-&amp;gt;flashOnly([&#39;username&#39;, &#39;email&#39;]);
+$request-&amp;gt;flashExcept(&#39;password&#39;);
+//将输入存入Session然后重定向
+return redirect(&#39;form&#39;)-&amp;gt;withInput();
+return redirect(&#39;form&#39;)-&amp;gt;withInput($request-&amp;gt;except(&#39;password&#39;));
+//重新获取旧数据
+$username = $request-&amp;gt;old(&#39;username&#39;);
+//在Blade template中获取旧数据，如果没有数据返回null
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;username&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;cookies&quot;&gt;Cookies&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用Laravel创建的Cookie都是加密的，如果客户端改变了它就会无效。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//获取cookie
+$value = $request-&amp;gt;cookie(&#39;name&#39;);
+$response = new Illuminate\Http\Response(&#39;Hello World&#39;);
+
+//返回cookie
+$response-&amp;gt;withCookie(&#39;name&#39;, &#39;value&#39;, $minutes);
+return $response;
+
+//返回永久cookie（5年）
+$response-&amp;gt;withCookie(cookie()-&amp;gt;forever(&#39;name&#39;, &#39;value&#39;));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-35&quot;&gt;请求中的文件&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$request-&amp;gt;file(&#39;photo&#39;);    //返回Symfony\Component\HttpFoundation\File\UploadedFile对象，这个对象扩展了PHP的SplFileInfo，提供很多与文件交互的方法
+$request-&amp;gt;hasFile(&#39;photo&#39;); //返回bool，判断文件是否在请求中存在
+$request-&amp;gt;file(&#39;photo&#39;)-&amp;gt;isValid(); //返回bool，确定文件是否上传成功
+
+$request-&amp;gt;file(&#39;photo&#39;)-&amp;gt;move($destinationPath);    //移动上传的文件（从PHP配置的临时目录移动到特定目录）
+$request-&amp;gt;file(&#39;photo&#39;)-&amp;gt;move($destinationPath, $fileName);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;-&lt;a href=&quot;http://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html&quot;&gt;更多UploadedFile的API。&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;section-36&quot;&gt;响应&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-37&quot;&gt;基本响应&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//返回字符串
+return &#39;Hello World&#39;;
+//返回对象（Illuminate\Http\Response，可自定义HTTP状态码和headers，继承自Symfony\Component\HttpFoundation\Response,提供创建响应的方法。）
+return (new Response($content, $status))-&amp;gt;header(&#39;Content-Type&#39;, $value);
+//使用response helper简化：
+return response($content, $status)-&amp;gt;header(&#39;Content-Type&#39;, $value);
+
+//指定headers的两种方法
+return response($content)
+            -&amp;gt;header(&#39;Content-Type&#39;, $type)
+            -&amp;gt;header(&#39;X-Header-One&#39;, &#39;Header Value&#39;)
+            -&amp;gt;header(&#39;X-Header-Two&#39;, &#39;Header Value&#39;);
+return response($content)
+            -&amp;gt;withHeaders([
+                &#39;Content-Type&#39; =&amp;gt; $type,
+                &#39;X-Header-One&#39; =&amp;gt; &#39;Header Value&#39;,
+                &#39;X-Header-Two&#39; =&amp;gt; &#39;Header Value&#39;,
+            ]);
+            
+//指定cookies
+return response($content)
+                -&amp;gt;header(&#39;Content-Type&#39;, $type)
+                -&amp;gt;cookie(&#39;name&#39;, &#39;value&#39;);
+//完整版的cookie函数
+-&amp;gt;cookie($name, $value, $minutes, $path, $domain, $secure, $httpOnly)
+//在方法中使用Cookie::queue添加
+public function index()
+{
+   Cookie::queue(&#39;saw_dashboard&#39;, true, 15);
+   return view(&#39;dashboard&#39;);
+}
+//取消对cookie的加密：在App\Http\Middleware\EncryptCookies中间件中配置$except，填入不想加密的cookie的名字
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-38&quot;&gt;其它响应&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//视图响应：不用传递HTTP状态码和headers
+return response()
+            -&amp;gt;view(&#39;hello&#39;, $data)
+            -&amp;gt;header(&#39;Content-Type&#39;, $type);
+//JSON响应：自动设置Content-Type为application/json，自动将参数用json_encode转成字符串
+return response()-&amp;gt;json([&#39;name&#39; =&amp;gt; &#39;Abigail&#39;, &#39;state&#39; =&amp;gt; &#39;CA&#39;]);
+//JSONP响应：后再接setCallback
+return response()
+            -&amp;gt;json([&#39;name&#39; =&amp;gt; &#39;Abigail&#39;, &#39;state&#39; =&amp;gt; &#39;CA&#39;])
+            -&amp;gt;setCallback($request-&amp;gt;input(&#39;callback&#39;));
+//文件下载响应（$name是默认文件名，Symfony HttpFoudation要求文件名是ASCII）：
+return response()-&amp;gt;download($pathToFile);
+return response()-&amp;gt;download($pathToFile, $name, $headers);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-39&quot;&gt;重定向&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//基本的重定向
+return redirect(&#39;home/dashboard&#39;);
+
+//浏览器后退，注意保证这个路由在使用web中间件组或者拥有所有session中间件应用的
+return back()-&amp;gt;withInput();
+
+//重定向到命名路由
+return redirect()-&amp;gt;route(&#39;login&#39;);
+return redirect()-&amp;gt;route(&#39;profile&#39;, [&#39;id&#39; =&amp;gt; 1]);
+return redirect()-&amp;gt;route(&#39;profile&#39;, [$user]);   //$user是Eloquent Model，会自动使用ID属性。
+
+//重定向到控制器方法（也可以再加路由参数）
+return redirect()-&amp;gt;action(&#39;HomeController@index&#39;);
+
+//带Session的重定向
+Route::post(&#39;user/profile&#39;, function () {
+    // Update the user&#39;s profile...
+    return redirect(&#39;dashboard&#39;)-&amp;gt;with(&#39;status&#39;, &#39;Profile updated!&#39;);
+});
+//在模板中获得session
+@if (session(&#39;status&#39;))
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;alert alert-success&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+        
     &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
 @endif
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h4 id=&quot;section-11&quot;&gt;创建任务&lt;/h4&gt;
+&lt;h3 id=&quot;section-40&quot;&gt;响应宏&lt;/h3&gt;
 
-&lt;ul&gt;
-  &lt;li&gt;继续完善&lt;code class=&quot;highlighter-rouge&quot;&gt;Route::post&lt;/code&gt;方法，保存正确的数据到数据库：&lt;/li&gt;
-&lt;/ul&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//在App/Providers目录下的service provider类的boot方法中添加：
+namespace App\Providers;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::post(&#39;/task&#39;, function (Request $request) {
-    $validator = Validator::make($request-&amp;gt;all(), [
-        &#39;name&#39; =&amp;gt; &#39;required|max:255&#39;,
-    ]);
+use Response;
+use Illuminate\Support\ServiceProvider;
 
-    if ($validator-&amp;gt;fails()) {
-        return redirect(&#39;/&#39;)
-            -&amp;gt;withInput()
-            -&amp;gt;withErrors($validator);
+class ResponseMacroServiceProvider extends ServiceProvider
+{
+    /**
+     * Perform post-registration booting of services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Response::macro(&#39;caps&#39;, function ($value) {
+            return Response::make(strtoupper($value));
+        });
+    }
+}
+//使用response方法或者ResponsFactory的实现来使用定义的宏：
+return response()-&amp;gt;caps(&#39;foo&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-41&quot;&gt;视图&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-42&quot;&gt;基本用法&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;return view(&#39;greeting&#39;, [&#39;name&#39; =&amp;gt; &#39;James&#39;]);
+return view(&#39;admin.profile&#39;, $data);            //位于resources/views/admin/profile.php
+view()-&amp;gt;exists(&#39;emails.customer&#39;)               //返回bool，判断是否存在
+view()                                          //返回Illuminate\Contracts\View\Factory的实例，可以使用该工厂类的方法
+
+return view(&#39;greeting&#39;)-&amp;gt;with(&#39;name&#39;, &#39;Victoria&#39;);  //传一对独立的参数
+
+//与所有视图共享数据，在服务容器的boot方法中调用view()-&amp;gt;share()
+class AppServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        view()-&amp;gt;share(&#39;key&#39;, &#39;value&#39;);
     }
 
-    $task = new Task;
-    $task-&amp;gt;name = $request-&amp;gt;name;
-    $task-&amp;gt;save();
+    public function register()
+    {
+        //
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
-    return redirect(&#39;/&#39;);
+&lt;h3 id=&quot;view-composers&quot;&gt;View Composers&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;是视图呈现时被调用的回调函数或类成员函数。如果想每次视图呈现时都绑定一些数据，它可以帮你在一个地方组织相关的逻辑。Laravel并没有为之提供默认的目录，这里我们创建&lt;code class=&quot;highlighter-rouge&quot;&gt;App\Http\ViewComposers&lt;/code&gt;，在其中定义composer类。：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;namespace App\Providers;
+use Illuminate\Support\ServiceProvider;
+//新建的service provider，要对config/app.php的providers进行配置。
+class ComposerServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        // Using class based composers...
+        view()-&amp;gt;composer(
+            &#39;profile&#39;, &#39;App\Http\ViewComposers\ProfileComposer&#39;
+        );
+
+        // Using Closure based composers...
+        view()-&amp;gt;composer(&#39;dashboard&#39;, function ($view) {
+            //
+        });
+    }
+
+    public function register()
+    {
+        //
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;这样，每次调用视图，&lt;code class=&quot;highlighter-rouge&quot;&gt;ProfileComposer@compose&lt;/code&gt;就会被执行：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;namespace App\Http\ViewComposers;
+
+use Illuminate\View\View;
+use App\Repositories\UserRepository;
+
+class ProfileComposer
+{
+    protected $users;
+
+    public function __construct(UserRepository $users)
+    {
+        $this-&amp;gt;users = $users;
+    }
+
+    public function compose(View $view)
+    {
+        $view-&amp;gt;with(&#39;count&#39;, $this-&amp;gt;users-&amp;gt;count());
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可以将一个composer用于多个视图：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;view()-&amp;gt;composer(
+    [&#39;profile&#39;, &#39;dashboard&#39;],
+    &#39;App\Http\ViewComposers\MyViewComposer&#39;
+);
+
+view()-&amp;gt;composer(&#39;*&#39;, function ($view) {
+    //
 });
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h4 id=&quot;section-12&quot;&gt;查看所有任务&lt;/h4&gt;
-
 &lt;ul&gt;
-  &lt;li&gt;编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;/&lt;/code&gt;路径：&lt;/li&gt;
+  &lt;li&gt;View Creators的作用和Composers类似，但前者是视图被初始化时调用，后者是将要呈现（render）时调用。注册view creator的方法如下：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::get(&#39;/&#39;, function () {
-    $tasks = Task::orderBy(&#39;created_at&#39;, &#39;asc&#39;)-&amp;gt;get();
-
-    return view(&#39;tasks&#39;, [
-        &#39;tasks&#39; =&amp;gt; $tasks
-    ]); //第二个参数：数组中每个key都可在视图模板中作为变量访问
-});
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;view()-&amp;gt;creator(&#39;profile&#39;, &#39;App\Http\ViewCreators\ProfileCreator&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
+&lt;h2 id=&quot;blade&quot;&gt;Blade模板&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-43&quot;&gt;定义布局&lt;/h3&gt;
+
 &lt;ul&gt;
-  &lt;li&gt;编写&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;：&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;@section&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;@yield&lt;/code&gt;。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@extends(&#39;layouts.app&#39;)
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Stored in resources/views/layouts/master.blade.php --&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;App Name - @yield(&#39;title&#39;)&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+        @section(&#39;sidebar&#39;)
+            This is the master sidebar.
+        @show
+
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            @yield(&#39;content&#39;)
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-44&quot;&gt;使用布局页&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;@extends&lt;/code&gt;指定布局。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Stored in resources/views/child.blade.php --&amp;gt;&lt;/span&gt;
+
+@extends(&#39;layouts.master&#39;)
+
+@section(&#39;title&#39;, &#39;Page Title&#39;)
+
+@section(&#39;sidebar&#39;)
+    @parent
+
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&lt;/span&gt;This is appended to the master sidebar.&lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+@endsection
 
 @section(&#39;content&#39;)
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Create Task Form... --&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Current Tasks --&amp;gt;&lt;/span&gt;
-    @if (count($tasks) &amp;gt; 0)
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel panel-default&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-heading&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                Current Tasks
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;panel-body&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;table&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;table table-striped task-table&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Table Headings --&amp;gt;&lt;/span&gt;
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;thead&amp;gt;&lt;/span&gt;
-                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;Task&lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
-                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;&lt;span class=&quot;ni&quot;&gt;&amp;amp;nbsp;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/thead&amp;gt;&lt;/span&gt;
-
-                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Table Body --&amp;gt;&lt;/span&gt;
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;tbody&amp;gt;&lt;/span&gt;
-                        @foreach ($tasks as $task)
-                            &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
-                                &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Task Name --&amp;gt;&lt;/span&gt;
-                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;table-text&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&amp;gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
-
-                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;
-                                    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- TODO: Delete Button --&amp;gt;&lt;/span&gt;
-                                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
-                            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
-                        @endforeach
-                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tbody&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-    @endif
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&lt;/span&gt;This is my body content.&lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
 @endsection
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&quot;section-13&quot;&gt;删除任务&lt;/h3&gt;
+&lt;h3 id=&quot;section-45&quot;&gt;显示数据&lt;/h3&gt;
 
-&lt;h4 id=&quot;section-14&quot;&gt;添加删除按钮&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;tasks.blade.php&lt;/code&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;tr&amp;gt;
-    &amp;lt;!-- Task Name --&amp;gt;
-    &amp;lt;td class=&quot;table-text&quot;&amp;gt;
-        &amp;lt;div&amp;gt;&amp;lt;/div&amp;gt;
-    &amp;lt;/td&amp;gt;
-
-    &amp;lt;!-- Delete Button --&amp;gt;
-    &amp;lt;td&amp;gt;
-        &amp;lt;form action=&quot;&quot; method=&quot;POST&quot;&amp;gt;
-            
-            
-
-            &amp;lt;button type=&quot;submit&quot; class=&quot;btn btn-danger&quot;&amp;gt;
-                &amp;lt;i class=&quot;fa fa-trash&quot;&amp;gt;&amp;lt;/i&amp;gt; Delete
-            &amp;lt;/button&amp;gt;
-        &amp;lt;/form&amp;gt;
-    &amp;lt;/td&amp;gt;
-&amp;lt;/tr&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;注意，HTML表单的method只能是GET或者POST，所以这里不能用DELETE，而是用``生成&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;input type=&#39;hidden&#39; name=&#39;_method&#39; value=&#39;DELETE&#39;&lt;/code&gt;交给Laravel后台解析。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;section-15&quot;&gt;删除操作&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;完成&lt;code class=&quot;highlighter-rouge&quot;&gt;/task/{task}&lt;/code&gt;，这里使用了model binding的方式自动去除{task}作为形参，表示要删除的对象。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Route::delete(&#39;/task/{task}&#39;, function (Task $task) {
-    $task-&amp;gt;delete();
-
-    return redirect(&#39;/&#39;);
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//数据绑定：
+Route::get(&#39;greeting&#39;, function () {
+    return view(&#39;welcome&#39;, [&#39;name&#39; =&amp;gt; &#39;Samantha&#39;]);
 });
+
+//模板页：
+Hello, .
+The current UNIX timestamp is .     //可以使用任意PHP代码，会使用htmlentities来防止XSS攻击。
+Hello, {!! $name !!}.                           //如果不想使用上述防止XSS攻击的特性
+Hello, @.                             //使用@来保持不被Blade引擎处理，比如Javascript中的大括号。
+          //带有存在验证的
+                        //同上，简写
+
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;h2 id=&quot;section-16&quot;&gt;问题解决&lt;/h2&gt;
+&lt;h3 id=&quot;section-46&quot;&gt;流程控制&lt;/h3&gt;
 
-&lt;h3 id=&quot;section-17&quot;&gt;服务器无响应问题&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//条件判断1
+@if (count($records) === 1)
+    I have one record!
+@elseif (count($records) &amp;gt; 1)
+    I have multiple records!
+@else
+    I don&#39;t have any records!
+@endif
+//条件判断2
+@unless (Auth::check())
+    You are not signed in.
+@endunless
+//在布局页面中判断section是否有内容
+@hasSection(&#39;title&#39;)
+   @yield(&#39;title&#39;) - App Name
+@else
+   App Name
+@endif
 
-&lt;p&gt;问题描述：访问 http://seckillphp.ifanze-local.cn/quickstart/public 提示服务器无响应。
-问题解决：记得给&lt;code class=&quot;highlighter-rouge&quot;&gt;storage&lt;/code&gt;就&lt;code class=&quot;highlighter-rouge&quot;&gt;bootstrap/cache&lt;/code&gt;赋777权限。&lt;/p&gt;
+//循环
+@for ($i = 0; $i &lt;span class=&quot;nt&quot;&gt;&amp;lt; 10&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;++)&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;The&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;current&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;is&lt;/span&gt; 
+&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;endfor&lt;/span&gt;
 
-&lt;h3 id=&quot;section-18&quot;&gt;路由无效&lt;/h3&gt;
+&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;foreach&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;($&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;users&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;This is user &lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+@endforeach
 
-&lt;p&gt;问题描述：访问除主页外的地址，如http://seckillphp.ifanze-local.cn/quickstart/public/task，均显示404错误。
-问题解决：这个问题应该出现在第二次开启服务器之后，因为是apache的rewrite模块没有开启或者配置正确的问题：&lt;/p&gt;
+@forelse ($users as $user)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+@empty
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&lt;/span&gt;No users&lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+@endforelse
 
-&lt;ol&gt;
-  &lt;li&gt;在&lt;code class=&quot;highlighter-rouge&quot;&gt;httpd.conf&lt;/code&gt;中取消下面一行前的注释：&lt;/li&gt;
-&lt;/ol&gt;
+@while (true)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&lt;/span&gt;I&#39;m looping forever.&lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+@endwhile
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;LoadModule rewrite_module modules/mod_rewrite.so
+//continue和break
+@foreach ($users as $user)
+    @if($user-&amp;gt;type == 1)
+        @continue
+    @endif
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+    @if($user-&amp;gt;number == 5)
+        @break
+    @endif
+@endforeach
+
+//continue和break的简写
+@foreach ($users as $user)
+    @continue($user-&amp;gt;type == 1)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+    @break($user-&amp;gt;number == 5)
+@endforeach
+
+//包含子视图，视图参数会继承到其中
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;div&amp;gt;&lt;/span&gt;
+    @include(&#39;shared.errors&#39;)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;form&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Form Contents --&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+//如果还要向其中传入更多参数
+@include(&#39;view.name&#39;, [&#39;some&#39; =&amp;gt; &#39;data&#39;])
+
+//如果要包含多个子视图，可以简写成：
+@each(&#39;view.name&#39;, $jobs, &#39;job&#39;)            //第一个参数：视图名，第二个参数：想要迭代的数组，第三个参数：迭代变量，还可以有第四个参数：在$jobs为空时的视图名
+
+//注释
+
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;配置&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Directory&amp;gt;&lt;/code&gt;标签，使用：&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h3 id=&quot;stacks&quot;&gt;Stacks&lt;/h3&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AllowOverride all
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@push(&#39;scripts&#39;)
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/example.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+@endpush
+//可以多次引用同一个stack：
+@stack(&#39;scripts&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;service-injection&quot;&gt;Service Injection&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@inject(&#39;metrics&#39;, &#39;App\Services\MetricsService&#39;)
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;div&amp;gt;&lt;/span&gt;
+    Monthly Revenue: .
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;blade-1&quot;&gt;扩展Blade&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;你可以自己注册指令，如创建一个格式化日期用的&lt;code class=&quot;highlighter-rouge&quot;&gt;@datetime($var)&lt;/code&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class AppServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        Blade::directive(&#39;datetime&#39;, function($expression) {
+            return &quot;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$expression&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#39;m/d/Y H:i&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;cp&quot;&gt;?&amp;gt;&lt;/span&gt;&quot;;
+        });
+    }
+    
+    public function register(){}
+}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 </description>
         <pubDate>Fri, 27 May 2016 02:12:40 +0800</pubDate>
-        <link>http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
-        <guid isPermaLink="true">http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <link>http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%B8%80-%E5%9F%BA%E7%A1%80/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%B8%80-%E5%9F%BA%E7%A1%80/</guid>
         
         <category>PHP</category>
         
@@ -2109,299 +3850,6 @@ test
         <category>笔记</category>
         
         <category>@慕课网</category>
-        
-      </item>
-    
-      <item>
-        <title>【慕课网】Java高并发秒杀API（一）：业务分析与DAO层</title>
-        <description>&lt;p&gt;注：这是我在看完慕课网上的视频后记的笔记，从零开始介绍了如何开发一个高并发的商品秒杀网站。&lt;/p&gt;
-
-&lt;p&gt;我觉得这是我在慕课网上看得最有价值的视频之一了，从中可以学习到很多项目构建的思路和编码技巧。唯一遗憾的是，这是用Java写的，而我没有用Java写过网站，所以对其中的很多Java依赖库丝毫不了解。不过没有关系，语言只是工具，思想都是相通的。把它放在PHP或者ASP.Net上一定会有类似的框架和方案可以实现同样的功能。也正因如此，若直接看我的这篇博客，可能什么都学不到。这篇博客是为我日后回顾做记录的。想学习相关的内容还是从看慕课网上yijun zhang老师的视频开始吧。&lt;/p&gt;
-
-&lt;p&gt;传送门：&lt;a href=&quot;http://www.imooc.com/u/2145618/courses?sort=publish&quot;&gt;http://www.imooc.com/u/2145618/courses?sort=publish&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;课程介绍&lt;/h2&gt;
-
-&lt;p&gt;基于SpringMVC + Spring + MyBatis。&lt;/p&gt;
-
-&lt;p&gt;秒杀业务：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;具有典型“事务”特性&lt;/li&gt;
-  &lt;li&gt;秒杀/红包类应用越来越多&lt;/li&gt;
-  &lt;li&gt;面试常问&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;相关技术介绍&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;MySQL：表设计、SQL技巧、事务和行级锁&lt;/li&gt;
-  &lt;li&gt;MyBatis：DAO层设计与开发、合理使用MyBatis、与Spring的整合&lt;/li&gt;
-  &lt;li&gt;Spring：Spring IOC整合Service、声明式事务运用&lt;/li&gt;
-  &lt;li&gt;SpringMVC：Restful接口设计和使用、框架运作流程、Controller开发技巧&lt;/li&gt;
-  &lt;li&gt;前端：交互设计、Bootstrap、JQuery&lt;/li&gt;
-  &lt;li&gt;高并发：高并发点和分析、优化思路和实现。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;section-2&quot;&gt;创建项目&lt;/h2&gt;
-
-&lt;p&gt;从零开始创建、从官网获取资源、使用Maven创建项目然后导入到IntelliJ IDEA工程。&lt;/p&gt;
-
-&lt;p&gt;注意使用更高的Servlet版本。&lt;/p&gt;
-
-&lt;p&gt;目录：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;main
---resources
-    --mapper
-        SeckillDao.xml
-        SuccessKilledDao.xml
-    --spring
-        spring-dao.xml
-    mybatis-config.xml
---webapp
---java
-    --org.seckill
-        --dao
-        --entity
---sql
-
-test
---java
---resources
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&quot;section-3&quot;&gt;配置依赖：&lt;/h2&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;junit 4.11&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;日志：java常用：slf4j，log4j，logback，common-logging。
-    &lt;ul&gt;
-      &lt;li&gt;slf4j(接口) + logback(实现)&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;数据库相关：
-    &lt;ul&gt;
-      &lt;li&gt;驱动：mysql-connector-java&lt;/li&gt;
-      &lt;li&gt;连接池：c3p0&lt;/li&gt;
-      &lt;li&gt;DAO框架：MyBatis&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Servlet Web相关依赖
-    &lt;ul&gt;
-      &lt;li&gt;标签：taglibs&lt;/li&gt;
-      &lt;li&gt;默认标签库：jstl&lt;/li&gt;
-      &lt;li&gt;jackson&lt;/li&gt;
-      &lt;li&gt;javax.servlet-api&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;spring依赖：
-    &lt;ul&gt;
-      &lt;li&gt;核心依赖：spring-core&lt;/li&gt;
-      &lt;li&gt;IOC：spring-beans&lt;/li&gt;
-      &lt;li&gt;扩展：spring-context&lt;/li&gt;
-      &lt;li&gt;DAO层依赖：spring-jdbc&lt;/li&gt;
-      &lt;li&gt;事务相关：spring-tx&lt;/li&gt;
-      &lt;li&gt;Spring Web相关依赖：spring-web&lt;/li&gt;
-      &lt;li&gt;spring-webmvc&lt;/li&gt;
-      &lt;li&gt;spring test相关依赖：spring-test&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;section-4&quot;&gt;秒杀业务的分析&lt;/h2&gt;
-
-&lt;p&gt;核心：用户和商家对库存的处理。&lt;/p&gt;
-
-&lt;p&gt;用户：减库存、记录购买明细 =&amp;gt; 事务 =&amp;gt; 数据落地（MySQL Vs NoSQL）&lt;/p&gt;
-
-&lt;p&gt;事务机制依然是目前最可靠的数据落地方案。&lt;/p&gt;
-
-&lt;p&gt;难点：“竞争”。MySQL：事务 + 行级锁。&lt;/p&gt;
-
-&lt;h2 id=&quot;section-5&quot;&gt;实现哪些秒杀功能&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;秒杀接口暴露&lt;/li&gt;
-  &lt;li&gt;执行秒杀&lt;/li&gt;
-  &lt;li&gt;相关查询&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;开发阶段：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;DAO设计编码&lt;/li&gt;
-  &lt;li&gt;Service设计编码&lt;/li&gt;
-  &lt;li&gt;Web设计编码&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;section-6&quot;&gt;编码&lt;/h2&gt;
-
-&lt;h3 id=&quot;section-7&quot;&gt;数据库设计与编码&lt;/h3&gt;
-
-&lt;h4 id=&quot;ddl&quot;&gt;DDL&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;秒杀库存表：&lt;code class=&quot;highlighter-rouge&quot;&gt;seckill(seckill_id, name, number, start_time, end_time, create_time)&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;MySQL使用InnoDB引擎（支持事务）。
-在start_time、end_time、create_time上建立索引。&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;秒杀成功明细表：&lt;code class=&quot;highlighter-rouge&quot;&gt;success_killed(seckill_id, user_phone, state, create_time)&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;使用联合主键：seckill_id, user_phone
-在create_time上建立索引。
-state: -1无效，0成功，1已付款….&lt;/p&gt;
-
-&lt;p&gt;养成手写DDL的习惯。&lt;/p&gt;
-
-&lt;h4 id=&quot;dao&quot;&gt;DAO实体和接口编码&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;编写Entity类。（技巧：IDE生成getter/setter/tostring）&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;设计DAO接口：实体的CRUD。
-    &lt;ul&gt;
-      &lt;li&gt;SeckillDao：
-        &lt;ul&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;int reduceNumber(long seckillId, Data killTime)&lt;/code&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Seckill queryById(long seckillId)&lt;/code&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;List&amp;lt;Seckill&amp;gt; queryAll(int offset, int limit)&lt;/code&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;SuccessKilledDao:
-        &lt;ul&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;int insertSuccessKilled(SuccessKilled successKilled)&lt;/code&gt;（没必要传整个实体，long seckillId, long userPhone即可）&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SuccessKilled queryByIdWithSeckill(long seckillId)&lt;/code&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;基于myBatis（或HiberNate）实现DAO。写mapper，为DAO接口方法提供SQL语句配置。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;myBatis整合Spring：
-    &lt;ul&gt;
-      &lt;li&gt;更少的编码：只写接口，不写实现&lt;/li&gt;
-      &lt;li&gt;更少的配置：别名（省去包名）、配置扫描、DAO实现&lt;/li&gt;
-      &lt;li&gt;足够的灵活性。（自己定制SQL、自由传参、结果集自动复制）&lt;/li&gt;
-    &lt;/ul&gt;
-
-    &lt;ol&gt;
-      &lt;li&gt;配置数据库相关参数。&lt;/li&gt;
-      &lt;li&gt;数据库连接池c3p0。（连接池属性：数据库连接参数、maxPoolSize、minPoolSize、autoCommitOnClose、checkoutTimeout、acquireRetryAttempts）&lt;/li&gt;
-      &lt;li&gt;配置sqlSessionFactory对象：注入数据库连接池、配置MyBatis全局配置文件、扫描entity包并使用别名、扫描sql配置文件(mapper/*.xml)。&lt;/li&gt;
-      &lt;li&gt;配置扫描DAO接口包，动态实现DAO接口，注入到spring容器中：注入sqlSessionFactory、给出扫描DAO接口包。&lt;/li&gt;
-    &lt;/ol&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;dao-1&quot;&gt;DAO层单元测试和问题排查&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;使用IDE自动生成SeckillDaoTest()方法。&lt;/li&gt;
-  &lt;li&gt;配置spring和junit整合，junit启动时加载springIOC容器。告诉junit spring配置文件。&lt;/li&gt;
-  &lt;li&gt;注入DAO实现类依赖。（就是声明个成员变量…）&lt;/li&gt;
-  &lt;li&gt;编写测试方法。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;涨姿势：Java没有保存形参的记录，要对形参使用@params注解。&lt;/p&gt;
-
-</description>
-        <pubDate>Sat, 21 May 2016 22:05:40 +0800</pubDate>
-        <link>http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%80-%E4%B8%9A%E5%8A%A1%E5%88%86%E6%9E%90%E4%B8%8EDAO%E5%B1%82/</link>
-        <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%B8%80-%E4%B8%9A%E5%8A%A1%E5%88%86%E6%9E%90%E4%B8%8EDAO%E5%B1%82/</guid>
-        
-        <category>Java</category>
-        
-        <category>Web后台</category>
-        
-        
-        <category>笔记</category>
-        
-        <category>@慕课网</category>
-        
-      </item>
-    
-      <item>
-        <title>关于我</title>
-        <description>&lt;p&gt;这里是孟凡泽的个人站点（&lt;a href=&quot;http://ifanze.cn&quot;&gt;http://ifanze.cn&lt;/a&gt;），在茫茫互联网的海洋中豪不起眼。如果您是碰巧空降至此，还真是一种缘分呢。&lt;/p&gt;
-
-&lt;p&gt;本博客将记录我今后的学习历程，主要是Web相关的技术。&lt;/p&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;经历&lt;/h2&gt;
-
-&lt;p&gt;我出生在一个平凡的小县城，现就读于武汉大学这所美丽的大学。主修GIS，在大学期间做过很多Web开发相关的项目。经过在这里已经近五年的学习和生活，自己渐渐明确了将来在这条职业道路上的发展方向。&lt;/p&gt;
-
-&lt;p&gt;自我感觉，大学里收获最多的是对编程基础的夯实。从C/C++作为入门，到数据结构、数据库、软件工程这些基本课程的学习，再到自己在W3school在线教程学习Web技术相关的基础知识，在慕课网上认识了MVC框架，再在导师所给的工程项目中将这些用于实践。这些经历过程中所收获的，包括基础理论、语言语法、工具使用、查阅文档的能力、代码调试能力、简单的架构和重构能力、团队沟通和合作能力，我想就是构筑将来自己的技能栈所需要的基石吧。&lt;/p&gt;
-
-&lt;p&gt;现在，在这毕业找工作之际，我建立起这篇博客，期待在接下来的日子中，自己能够将琐碎的知识组织起来，并有所输出。我想是大有裨益的。&lt;/p&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;爱好&lt;/h2&gt;
-
-&lt;p&gt;我喜欢和计算机，手机，以及其它智能设备打交道。追求硬件、软件和互联网产品上更优质和更高效的使用体验。有时会宅在电脑前玩LOL，自诩不坑。也有时拿起相机出去拍拍片，审美不行的我水平特渣，努力提升ing。&lt;/p&gt;
-
-&lt;h2 id=&quot;section-2&quot;&gt;阅读&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;《算法导论》&lt;/li&gt;
-  &lt;li&gt;《深入理解计算机系统》&lt;/li&gt;
-  &lt;li&gt;《MacTalk·人生元编程》&lt;/li&gt;
-  &lt;li&gt;《重构：改善既有代码的设计》&lt;/li&gt;
-  &lt;li&gt;《Clean Code Handbook》&lt;/li&gt;
-  &lt;li&gt;《程序员面试白皮书》&lt;/li&gt;
-  &lt;li&gt;《高效能人士的七个习惯》&lt;/li&gt;
-  &lt;li&gt;《快乐的Linux命令行》&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;section-3&quot;&gt;受益于&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.liaoxuefeng.com/&quot;&gt;廖雪峰的官方网站&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.mifengtd.cn&quot;&gt;褪墨・时间管理，个人提升，生活健康与习惯&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://pizida.com/&quot;&gt;痞子达・web学习、移动开发学习&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://cnfeat.com/&quot;&gt;独立写生&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.ruanyifeng.com/blog/&quot;&gt;阮一峰的网络日志&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://w3school.com.cn/&quot;&gt;w3shool 在线教程&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;section-4&quot;&gt;关注&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;http://ithome.com&quot;&gt;IT之家 - 数码，科技，生活&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://zhihu.com&quot;&gt;知乎&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://iplaysoft.com&quot;&gt;异次元软件世界 - 软件改变生活！&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://zealer.com&quot;&gt;ZEALER - 科技生活方式第一站&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.appinn.com/&quot;&gt;小众软件&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http:/imooc.com&quot;&gt;慕课网 - 国内最大的IT技能学习平台&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://bbs.feng.com&quot;&gt;威锋网论坛 - 千万果粉大本营&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://bbs.pcbeta.com&quot;&gt;远景论坛 - 微软极客社区&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;a name=&quot;contact&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;section-5&quot;&gt;加我好友&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/posts/qrcode_1463853322210%E5%89%AF%E6%9C%AC.jpg&quot; alt=&quot;qrcode_1463853322210副本&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;
-&lt;br /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-</description>
-        <pubDate>Fri, 20 May 2016 22:05:40 +0800</pubDate>
-        <link>http://iFanze.cn//about/</link>
-        <guid isPermaLink="true">http://iFanze.cn//about/</guid>
-        
-        
-        <category>随笔</category>
         
       </item>
     

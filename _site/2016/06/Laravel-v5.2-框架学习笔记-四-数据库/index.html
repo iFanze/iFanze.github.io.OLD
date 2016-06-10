@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Laravel v5.2 框架学习笔记（四）：数据库</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/06/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%9B%9B-%E6%95%B0%E6%8D%AE%E5%BA%93/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?10581c22432798705ab269dd1ce9615c";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="/about/#contact" title="QQ:919446762 微信:iFanze">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="10 Jun 2016" class="post-meta__date date">10 Jun 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
+    </div>
+    <h1 class="post-title">Laravel v5.2 框架学习笔记（四）：数据库</h1>
+  </header>
+
+  <section class="post">
+    <p>注：Laravel数据访问层的使用，很容易理解，所以这一篇基本上就是把官网上的代码拷下来做查阅用的。</p>
+
+<h2 id="section">入门</h2>
+
+<p>Laravel支持的三种与数据库交互的方式：</p>
+
+<ul>
+  <li>raw SQL</li>
+  <li>fluent query builder</li>
+  <li>Eloquent ORM</li>
+</ul>
+
+<p>Laravel支持的四种DBMS：</p>
+
+<ul>
+  <li>MySQL</li>
+  <li>Postgres</li>
+  <li>SQLite</li>
+  <li>SQL Server</li>
+</ul>
+
+<h3 id="section-1">配置</h3>
+
+<p>在<code class="highlighter-rouge">config/database.php</code>中有四种DBMS的配置模板。如果对读（select）和写（insert、update、delete）要求使用不同的配置。可以用以下写法：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>'mysql' =&gt; [
+    'read' =&gt; [
+        'host' =&gt; '192.168.1.1',
+    ],
+    'write' =&gt; [
+        'host' =&gt; '196.168.1.2'
+    ],
+    'driver'    =&gt; 'mysql',
+    'database'  =&gt; 'database',
+    'username'  =&gt; 'root',
+    'password'  =&gt; '',
+    'charset'   =&gt; 'utf8',
+    'collation' =&gt; 'utf8_unicode_ci',
+    'prefix'    =&gt; '',
+],
+</code></pre>
+</div>
+
+<h3 id="section-2">监听查询事件</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>namespace App\Providers;
+
+use DB;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        DB::listen(function ($query) {
+            // $query-&gt;sql
+            // $query-&gt;bindings
+            // $query-&gt;time
+        });
+    }
+
+    public function register()
+    {
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="section-3">事务</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1.使用闭包自动进行commit或者rollback
+DB::transaction(function () {
+    DB::table('users')-&gt;update(['votes' =&gt; 1]);
+    DB::table('posts')-&gt;delete();
+});
+
+//2.手动控制
+DB::beginTransaction();
+DB::rollBack();
+DB::commit();
+</code></pre>
+</div>
+
+<h3 id="section-4">使用多个数据库连接</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$users = DB::connection('foo')-&gt;select(...);
+
+$pdo = DB::connection()-&gt;getPdo();  //You may also access the raw, underlying PDO instance using the getPdo method on a connection instance
+</code></pre>
+</div>
+
+<h2 id="raw-sql">Raw SQL</h2>
+
+<p>使用<code class="highlighter-rouge">DB</code>facade实现。</p>
+
+<h3 id="select">select</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1.参数绑定，可以防止SQL注入
+$users = DB::select('select * from users where active = ?', [1]);
+foreach ($users as $user) {
+    echo $user-&gt;name;
+}
+
+//2.具有命名的参数绑定
+$results = DB::select('select * from users where id = :id', ['id' =&gt; 1]);   
+</code></pre>
+</div>
+
+<h3 id="insertupdatedelete">insert、update、delete</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DB::insert('insert into users (id, name) values (?, ?)', [1, 'Dayle']);
+$affected = DB::update('update users set votes = 100 where name = ?', ['John']);
+$deleted = DB::delete('delete from users');
+//其它没有任何返回值的指令
+DB::statement('drop table users');
+</code></pre>
+</div>
+
+<h2 id="query-builder">Query Builder</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$users = DB::table('users')-&gt;get();                         //获取所有行，返回数组
+$user = DB::table('users')-&gt;where('name', 'John')-&gt;first(); //获取某一行，返回对象
+$email = DB::table('users')-&gt;where('name', 'John')-&gt;value('email');     //获取某一行的某一列
+
+//如果量较大，可以分成小包进行处理：
+DB::table('users')-&gt;orderBy('id')-&gt;chunk(100, function($users) {
+    foreach ($users as $user) {
+        //
+    }
+    //如果return false，则不再进行之后的操作
+});
+
+//某一列组成的列表
+$titles = DB::table('roles')-&gt;pluck('title');
+foreach ($titles as $title)...
+//可以为这个列表指定自定义的key
+$roles = DB::table('roles')-&gt;pluck('title', 'name');
+foreach ($roles as $name =&gt; $title)...
+
+//聚合操作：count、max、min、avg、sum
+$users = DB::table('users')-&gt;count();
+$price = DB::table('orders')-&gt;max('price');
+
+//综合应用：
+$price = DB::table('orders')
+                -&gt;where('finalized', 1)
+                -&gt;avg('price');
+</code></pre>
+</div>
+
+<h3 id="select-1">select</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//指定列
+$users = DB::table('users')-&gt;select('name', 'email as user_email')-&gt;get();
+//distinct
+$users = DB::table('users')-&gt;distinct()-&gt;get();
+//向现有查询实例中添加列
+$query = DB::table('users')-&gt;select('name');
+$users = $query-&gt;addSelect('age')-&gt;get();
+//插入raw SQL
+$users = DB::table('users')
+                     -&gt;select(DB::raw('count(*) as user_count, status'))
+                     -&gt;where('status', '<span class="err">&lt;</span>&gt;', 1)
+                     -&gt;groupBy('status')
+                     -&gt;get();
+</code></pre>
+</div>
+
+<h3 id="join">join</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//Inner Join
+$users = DB::table('users')
+            -&gt;join('contacts', 'users.id', '=', 'contacts.user_id')
+            -&gt;join('orders', 'users.id', '=', 'orders.user_id')
+            -&gt;select('users.*', 'contacts.phone', 'orders.price')
+            -&gt;get();
+//Left Join
+$users = DB::table('users')
+            -&gt;leftJoin('posts', 'users.id', '=', 'posts.user_id')
+            -&gt;get();
+//Cross Join
+$users = DB::table('sizes')
+            -&gt;crossJoin('colours')
+            -&gt;get();
+            
+//更高级的Join，用闭包作第二个参数，其参数是JoinClause对象。`on`和`orOn`用于某列和某列进行比较
+DB::table('users')
+        -&gt;join('contacts', function ($join) {
+            $join-&gt;on('users.id', '=', 'contacts.user_id')-&gt;orOn(...);
+        })
+        -&gt;get();
+//也可以使用`where`和`orWhere`，用于某列和某值进行比较
+DB::table('users')
+        -&gt;join('contacts', function ($join) {
+            $join-&gt;on('users.id', '=', 'contacts.user_id')
+                 -&gt;where('contacts.user_id', '&gt;', 5);
+        })
+        -&gt;get();
+</code></pre>
+</div>
+
+<h3 id="union">union</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$first = DB::table('users')
+            -&gt;whereNull('first_name');
+$users = DB::table('users')
+            -&gt;whereNull('last_name')
+            -&gt;union($first)
+            -&gt;get();
+</code></pre>
+</div>
+
+<p>注：<code class="highlighter-rouge">unionAll</code>和<code class="highlighter-rouge">union</code>也有相同的用法</p>
+
+<h3 id="where">where</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//1. 简单用法，操作符可以用`&gt;=`、`<span class="err">&lt;</span>&gt;`、`like`等
+$users = DB::table('users')-&gt;where('votes', '=', 100)-&gt;get();
+$users = DB::table('users')-&gt;where('votes', 100)-&gt;get();
+$users = DB::table('users')-&gt;where([
+    ['status','1'],
+    ['subscribed','<span class="err">&lt;</span>&gt;','1'],
+])-&gt;get();
+$users = DB::table('users')
+                    -&gt;where('votes', '&gt;', 100)
+                    -&gt;orWhere('name', 'John')
+                    -&gt;get();
+//2. 判断范围
+$users = DB::table('users')
+                    -&gt;whereBetween('votes', [1, 100])-&gt;get();
+$users = DB::table('users')
+                    -&gt;whereNotBetween('votes', [1, 100])
+                    -&gt;get();
+$users = DB::table('users')
+                    -&gt;whereIn('id', [1, 2, 3])
+                    -&gt;get();
+$users = DB::table('users')
+                    -&gt;whereNotIn('id', [1, 2, 3])
+                    -&gt;get();
+$users = DB::table('users')
+                    -&gt;whereNull('updated_at')
+                    -&gt;get();
+$users = DB::table('users')
+                    -&gt;whereNotNull('updated_at')
+                    -&gt;get();
+//3. 比较两列                    
+$users = DB::table('users')
+                -&gt;whereColumn('first_name', 'last_name');
+$users = DB::table('users')
+                -&gt;whereColumn('updated_at', '&gt;', 'created_at'); 
+$users = DB::table('users')
+                -&gt;whereColumn([
+                    ['first_name', 'last_name'],
+                    ['updated_at', '&gt;', 'created_at']
+                ]);                                                                                                               
+//4. 参数分组
+//select * from users where name = 'John' or (votes &gt; 100 and title <span class="err">&lt;</span>&gt; 'Admin')
+DB::table('users')
+            -&gt;where('name', '=', 'John')
+            -&gt;orWhere(function ($query) {           //闭包作参数，其参数为一个query builder实例
+                $query-&gt;where('votes', '&gt;', 100)
+                      -&gt;where('title', '<span class="err">&lt;</span>&gt;', 'Admin');
+            })
+            -&gt;get();            
+//5. exists子句            
+DB::table('users')
+            -&gt;whereExists(function ($query) {
+                $query-&gt;select(DB::raw(1))
+                      -&gt;from('orders')
+                      -&gt;whereRaw('orders.user_id = users.id');
+            })
+            -&gt;get();
+/*
+    select * from users
+    where exists (
+        select 1 from orders where orders.user_id = users.id
+    )
+*/
+//6. JSON where子句（需要MySQL 5.7或Postgres）
+$users = DB::table('users')
+                -&gt;where('preferences-&gt;dining-&gt;meal', 'salad')
+                -&gt;get();
+
+</code></pre>
+</div>
+
+<h3 id="order">order</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//升降序
+$users = DB::table('users')
+                -&gt;orderBy('name', 'desc')   //asc或desc
+                -&gt;get();
+//随机序
+$randomUser = DB::table('users')
+                -&gt;inRandomOrder()
+                -&gt;first();    
+</code></pre>
+</div>
+
+<h3 id="grouphave">group、have</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$users = DB::table('users')
+                -&gt;groupBy('account_id')
+                -&gt;having('account_id', '&gt;', 100)        //用法同where
+                -&gt;get();
+$users = DB::table('orders')
+                -&gt;select('department', DB::raw('SUM(price) as total_sales'))
+                -&gt;groupBy('department')
+                -&gt;havingRaw('SUM(price) &gt; 2500')        //使用raw SQL
+                -&gt;get();                
+</code></pre>
+</div>
+
+<h3 id="limitoffset">limit、offset</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$users = DB::table('users')-&gt;skip(10)-&gt;take(5)-&gt;get();
+</code></pre>
+</div>
+
+<h3 id="section-5">条件语句</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$role = $request-&gt;input('role');
+//如果when函数的第一个参数为true，就执行闭包中的查询。否则就不执行。
+$users = DB::table('users')
+                -&gt;when($role, function ($query) use ($role) {
+                    return $query-&gt;where('role_id', $role);
+                })
+                -&gt;get();
+</code></pre>
+</div>
+
+<h3 id="insert">insert</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DB::table('users')-&gt;insert(
+    ['email' =&gt; 'john@example.com', 'votes' =&gt; 0]
+);
+DB::table('users')-&gt;insert([
+    ['email' =&gt; 'taylor@example.com', 'votes' =&gt; 0],
+    ['email' =&gt; 'dayle@example.com', 'votes' =&gt; 0]
+]);
+//返回自增的id（注意如果是postgres，要求自增的列名是id，否则将列名写在insertGetId()的第二个参数中）
+$id = DB::table('users')-&gt;insertGetId(
+    ['email' =&gt; 'john@example.com', 'votes' =&gt; 0]
+);
+</code></pre>
+</div>
+
+<h3 id="update">update</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DB::table('users')
+            -&gt;where('id', 1)
+            -&gt;update(['votes' =&gt; 1]);
+//快速自增自减
+DB::table('users')-&gt;increment('votes');
+DB::table('users')-&gt;increment('votes', 5);
+DB::table('users')-&gt;decrement('votes');
+DB::table('users')-&gt;decrement('votes', 5);
+DB::table('users')-&gt;increment('votes', 1, ['name' =&gt; 'John']);  //同时更新其它列
+</code></pre>
+</div>
+
+<h3 id="delete">delete</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DB::table('users')-&gt;where('votes', '&gt;', 100)-&gt;delete();
+DB::table('users')-&gt;truncate(); //删除所有数据并置自动递增字段为0
+</code></pre>
+</div>
+
+<h3 id="pessimistic-locking">悲观的锁（Pessimistic Locking）</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DB::table('users')-&gt;where('votes', '&gt;', 100)-&gt;sharedLock()-&gt;get();      //防止更新
+DB::table('users')-&gt;where('votes', '&gt;', 100)-&gt;lockForUpdate()-&gt;get();   //防止更新或查询
+</code></pre>
+</div>
+
+<h2 id="migrations">Migrations</h2>
+
+<!-- more -->
+
+<h2 id="seeding">Seeding</h2>
+
+<!-- more -->
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 2016 孟凡泽. All Rights Reserved. 皖ICP备16011114号-1<br/><br/>Powered by Jekyll. <br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+    <script type="text/javascript" src="http://tajs.qq.com/stats?sId=56525424" charset="UTF-8"></script>
+  </body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Laravel v5.2 框架学习笔记（二）：架构</title>
+  <meta name="description" content="求知，思考，高效生活">
+  <meta name="author" content="孟凡泽">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Meng Fanze">
+  <meta name="twitter:description" content="求知，思考，高效生活">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Meng Fanze">
+  <meta property="og:description" content="求知，思考，高效生活">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/images/favicons/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/images/favicons/manifest.json">
+  <link rel="shortcut icon" href="/images/favicons/favicon.ico">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="msapplication-TileImage" content="/images/favicons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome-4.6.3/css/font-awesome.min.css">
+  <link rel="canonical" href="http://iFanze.cn//2016/05/Laravel-v5.2-%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BA%8C-%E6%9E%B6%E6%9E%84/">
+  <link rel="alternate" type="application/rss+xml" title="Meng Fanze" href="/feed.xml">
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?10581c22432798705ab269dd1ce9615c";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</head>
+
+
+  <body>
+    <span class="mobile btn-mobile-menu">
+  <i class="icon icon-list btn-mobile-menu__icon"></i>
+  <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+</span>
+  
+<header class="panel-cover" style="background-image: url(/images/cover.jpg)">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <a href="/" title="link to home of Meng Fanze">
+          <img src="/images/profile.jpg" class="user-image" alt="My Profile Photo">
+          <h1 class="panel-cover__title panel-title">Meng Fanze</h1>
+        </a>
+        <hr class="panel-cover__divider">
+        <p class="panel-cover__description">求知，思考，高效生活</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary">
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+              <li class="navigation__item"><a href="/#blog" title="link to Meng Fanze blog" class="blog-button">主页</a></li>
+              <li class="navigation__item"><a href="/tags" title="标签" class="blog-button">标签</a></li>
+              <li class="navigation__item"><a href="/categories" title="分类" class="blog-button">分类</a></li>
+              <li class="navigation__item"><a href="/about" title="关于我" class="blog-button">关于</a></li>
+            </ul>
+          </nav>
+
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+          
+            
+              <!-- QQ -->
+              <li class="navigation__item">
+                <a href="/about/#contact" title="QQ:919446762 微信:iFanze">
+                  <i class="fa fa-qq" aria-hidden="true"></i>
+                  <span class="label">QQ</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 微博 -->
+              <li class="navigation__item">
+                <a href="http://weibo.com/ichen0201" title="新浪微博" target="_blank">
+                  <i class="fa fa-weibo" aria-hidden="true"></i>
+                  <span class="label">微博</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- 知乎 -->
+              <li class="navigation__item">
+                <a href="https://www.zhihu.com/people/iFanze" title="知乎" target="_blank">
+                  <i class="fa" aria-hidden="true">知</i>
+                  <span class="label">知乎</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- GitHub -->
+              <li class="navigation__item">
+                <a href="https://www.github.com/iFanze" title="iFanze on GitHub" target="_blank">
+                  <i class="fa fa-github fa-lg" aria-hidden="true"></i>
+                  <span class="label">Github</span>
+                </a>
+              </li>
+            
+
+            
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:iFanze@outlook.com" title="Email iFanze@outlook.com" target="_blank">
+                  <i class="fa fa-envelope fa-fw" aria-hidden="true"></i>
+                  <span class="label">E-mail</span>
+                </a>
+              </li>
+            
+
+            <!-- RSS -->
+            <li class="navigation__item">
+              <a href="/feed.xml" title="Subscribe" target="_blank">
+                  <i class="fa fa-rss fa-fw" aria-hidden="true"></i>
+                  <span class="label">RSS</span>
+              </a>
+            </li>
+          
+            <!-- About me 
+            <li class="navigation__item">
+              <a href="/about" title="About me">
+                  <i class="fa fa-info fa-fw" aria-hidden="true"></i>
+                  <span class="label">About me</span>
+              </a>
+            </li>
+            -->
+            </ul>
+          </nav>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+      <div class="content-wrapper__inner">
+        <article class="post-container post-container--single">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="27 May 2016" class="post-meta__date date">27 May 2016</time> &#8226; <span class="post-meta__tags">on <a href="/tags/#PHP">PHP</a> </span>
+    </div>
+    <h1 class="post-title">Laravel v5.2 框架学习笔记（二）：架构</h1>
+  </header>
+
+  <section class="post">
+    <p>注：官网这一部分的教程比较晦涩，自己花了点钱买了<a href="laravist.com">Laravist.com</a>网站上的<a href="https://laravist.com/series/peak-into-laravel-core-components">理解 Laravel 核心概念</a>视频看了看就有些眉目了。</p>
+
+<h2 id="request-lifecycle">Request Lifecycle</h2>
+
+<h2 id="application-structure">Application Structure</h2>
+
+<h2 id="service-providers">Service Providers</h2>
+
+<ul>
+  <li>在<code class="highlighter-rouge">config/app.php</code>的<code class="highlighter-rouge">providers</code>数组里可以找到所有会加载的Service Providers，大多数只会在使用时加载（deferred）。</li>
+  <li>所有Service Providers都继承自<code class="highlighter-rouge">Illuminate\Support\ServiceProvider</code>类，需要至少定义<code class="highlighter-rouge">register</code>方法，在其中你应该仅仅进行一些绑定操作，并且不应该注册任何的事件监听器、路由、功能模块等。否则，你可能意外地使用由service provider提供的没有加载的服务。</li>
+  <li>可以用以下命令生成新的provider：</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>php artisan make:provider RiakServiceProvider 
+</code></pre>
+</div>
+
+<h2 id="service-container">Service Container</h2>
+
+<h2 id="contracts">Contracts</h2>
+
+<h2 id="facades">Facades</h2>
+
+
+  </section>
+  
+</article>
+
+
+<!--
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = '//ifanze.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+-->
+<!--高速版-->
+<div id="SOHUCS"></div>
+<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+  window.changyan.api.config({
+    appid: 'cysp5sdDS',
+    conf: 'prod_d82562f88560b08461d2ee27cc031105'
+  });
+</script>        
+
+      </div>
+
+      <footer class="footer">
+  <span class="footer__copyright">Copyright &copy; 2016 孟凡泽. All Rights Reserved. 皖ICP备16011114号-1<br/><br/>Powered by Jekyll. <br/><br/>Theme: Jekyll-Uno by Josh Gerdes</span>
+</footer> 
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    </div>
+    <script type="text/javascript" src="http://tajs.qq.com/stats?sId=56525424" charset="UTF-8"></script>
+  </body>
+</html>
