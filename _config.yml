@@ -28,6 +28,7 @@ paginate: 10
 permalink: /:year/:month/:title/
 markdown: kramdown
 highlighter: rouge
+#highlighter: pygments
 
 kramdown:
   # use Github Flavored Markdown

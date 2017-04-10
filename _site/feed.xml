@@ -5,9 +5,203 @@
     <description>求知，思考，高效生活</description>
     <link>http://iFanze.cn//</link>
     <atom:link href="http://iFanze.cn//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 10 Jun 2016 22:52:50 +0800</pubDate>
-    <lastBuildDate>Fri, 10 Jun 2016 22:52:50 +0800</lastBuildDate>
+    <pubDate>Mon, 10 Apr 2017 20:33:45 +0800</pubDate>
+    <lastBuildDate>Mon, 10 Apr 2017 20:33:45 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>使用vps、shadowsocks、kcptun搭梯子</title>
+        <description>
+&lt;hr /&gt;
+&lt;p&gt;layout: post
+title: 使用VPS、Shadowsocks、kcptun搭梯子
+author: 孟凡泽
+date: 2016-11-20 19:12:40 +0800
+tag: 网络
+categories: 笔记
+—&lt;/p&gt;
+
+&lt;p&gt;从我家院子出来进去挺不方便的，只能用梯子从墙上翻过去。自己也试过很多种梯子了，各种打着VPN标签的也好，PAC标签的也好，免费的或者花钱买来的，他们的质量和爬过墙需要耗费的时间成本总不那么理想。这一次，终于花费了两天的时间自己动手做了个，已经很大程度上符合自己的预期了~&lt;/p&gt;
+
+&lt;p&gt;主要思想：租用国外的VPS，使用Shadowsocks(简称ss)把它搭建成代理服务器，再使用kcptun优化速度。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;一、用到的工具&lt;/h2&gt;
+
+&lt;h3 id=&quot;vps&quot;&gt;1.1 VPS&lt;/h3&gt;
+
+&lt;p&gt;国内的云服务厂商，如腾讯云阿里云，海外的节点甚至香港的节点都很贵，不考虑了…（腾讯云对学生1元/月的国内服务器还是很棒的。）&lt;/p&gt;
+
+&lt;p&gt;而国外的，通过各方的推荐，最后选择了&lt;a href=&quot;https://bwh1.net/&quot;&gt;搬瓦工&lt;/a&gt;。实惠、速度快。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14795638920454.jpg&quot; alt=&quot;&quot; /&gt;
+我选择的是每月5刀的这款，最方便的是这个网站支持支付宝。这也是唯一需要花钱的地方了，其实3刀每月的估计也够，带宽是一样的，按年付费还会更便宜，只是机器配置和每月流量少一些。这样的开销绝对比直接买各种VPN划得来，并且速度更快、终端数没限制、连接更稳定、流量够用，并且还获得了一台海外的服务器以后可以搭更多你想要的服务。&lt;/p&gt;
+
+&lt;h3 id=&quot;shadowsocks&quot;&gt;1.2 ShadowSocks&lt;/h3&gt;
+
+&lt;p&gt;VPN ≠ 代理，只是大多数人是利用VPN实现代理的功能，VPN其实主要是用在外网访问内网的情景中。具体对比参见：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/25143289&quot;&gt;技术角度分析一下VPN和代理服务器的区别？ - 知乎&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;VPN使用的协议有PPTP、L2TP等等，但是给我的感觉是在我们实验室的环境下能够成功连接的几率基本为0。&lt;/p&gt;
+
+&lt;p&gt;而代理的设置往往在很多浏览器、应用软件、甚至是系统控制面板的配置界面里可以看到，有两种常用的：&lt;/p&gt;
+
+&lt;p&gt;第一种：自动代理。需要填写一个PAC文件的地址。这个文件里记录有若干站点的访问规则，这样系统就知道对一个特定的网站要走怎样的代理，或者是不走代理了。这种方式的优点是配置简单，非常轻量级，比如我之前经常在用的这个公共PAC：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://pac.itzmx.com/&quot;&gt;PAC全自动代理脚本，免费代理，proxy代理，开源项目官网 - itzmx.com&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;但是这种公共PAC的缺点是不稳定、慢，现在每次第一次用还需要输入特定的用户名和密码。不过你需要做的其实很简单，直接在系统的网络配置界面或者Chrome的代理切换插件里类似这样配置即可：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14795765365109.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;第二种：手动设置代理，所有流量都走代理通道。一般是填写代理服务器的IP和端口，有些还需要用户名和密码。
+&lt;img src=&quot;/images/posts/14796206378825.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;常用的代理方式主要包括：HTTP代理、HTTPS代理、SOCKS代理。至于这三者的区别，我的理解是，HTTP代理和HTTPS代理工作在OSI模型的应用层，并且只能各自代理HTTP或HTTPS协议通讯。而SOCKS代理工作在会话层，包括4和5两个版本，后者比前者多了对鉴定、UDP、IPv6等的支持，只是单纯传递数据包，不关心具体协议和用法，所以快很多。更具体的区别可参阅：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8&quot;&gt;代理服务器 - 维基百科，自由的百科全书&lt;/a&gt;&lt;/p&gt;
+
+  &lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E8%B6%85%E6%96%87%E6%9C%AC%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE&quot;&gt;超文本传输协议 - 维基百科，自由的百科全书&lt;/a&gt;&lt;/p&gt;
+
+  &lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/SOCKS&quot;&gt;SOCKS - 维基百科，自由的百科全书&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;而Shadowsocks，顾名思义，主要使用的是socks协议。而我们的主要任务就是要在租用的VPS上安装SS的服务器端让它能够提供代理服务，之后就是在客户端上填入参数进行配置了（或者使用它提供的客户端，各操作系统都有）。&lt;/p&gt;
+
+&lt;p&gt;遗憾的是，Shadowsocks的作者已经迫于一些压力撤掉了Github上的代码，估计现在只能使用流传的版本？&lt;/p&gt;
+
+&lt;p&gt;不过不用担心，搬瓦工的VPS控制面板上提供了一键安装Shadowsocks Server的功能，真是太方便了…&lt;/p&gt;
+
+&lt;h3 id=&quot;kcptun&quot;&gt;1.3 kcptun&lt;/h3&gt;
+
+&lt;p&gt;完成上述两部分后，再配置下客户端实际上就已经成功了，只是速度还不理想。通过搜索发现这个速度还是有提升的空间的。首先发现的是FinalSpeed和它的高级版TCPSpeed，后者是前者的升级收费版，并且开发者撤下了前者在Github上的代码，不考虑了…&lt;/p&gt;
+
+&lt;p&gt;而kcptun就是很棒的一个开源替代品。使用了KCP协议，看看它的介绍：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;KCP 是一个快速可靠协议，能以比 TCP浪费10%-20%的带宽的代价，换取平均延迟降低 30%-40%，且最大延迟降低三倍的传输效果。&lt;/p&gt;
+
+  &lt;p&gt;&lt;a href=&quot;http://www.open-open.com/lib/view/open1428414542776.html&quot;&gt;快速可靠协议：KCP - OPEN 开发经验库&lt;/a&gt;&lt;/p&gt;
+
+  &lt;p&gt;&lt;a href=&quot;https://github.com/xtaci/kcptun&quot;&gt;xtaci/kcptun: A Simple UDP Tunnel Based On KCP&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;我们需要做的是在客户端与VPS的SS服务器之间分别配置服务器端和客户端，然后让客户端上的kcptun代理流量，就是这样子：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14795785737529.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;虽然整个架构变复杂了一些，但是速度的提升真的很显著，使用后流畅观看Youtube上的1080p视频不是问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;二、具体流程&lt;/h2&gt;
+
+&lt;h3 id=&quot;vps-1&quot;&gt;2.1 购买和管理VPS&lt;/h3&gt;
+
+&lt;p&gt;这里唯一要注意的就是机房的位置，搬瓦工提供五个位置可选，其中位于美国西部的Los Angeles和Phoenix的机房会快一些。操作系统当然是用CentOS。&lt;/p&gt;
+
+&lt;p&gt;购买完成后即可通过他提供的KiwiVM控制面板进入VPS的管理界面。这里可以查看VPS的配置、资源使用，也有在Web端进行文件管理、密码修改、系统更换的操作，甚至还提供了3种能在Web上直接使用的Shell。如果选择的机房位置不满意，也可以很方便地进行更换，当然这样的话IP会变，但数据都会帮你进行无缝地转移。&lt;/p&gt;
+
+&lt;p&gt;当然最方便地还是用自己电脑上的终端（Windows上可以使用putty、cygwin等）通过&lt;code class=&quot;highlighter-rouge&quot;&gt;ssh&lt;/code&gt;登录，要注意的是SSH端口并不是默认的22，可以在KiwiVM主页上找到。系统还会为你生成默认的root用户密码，这也需要你登录后运行&lt;code class=&quot;highlighter-rouge&quot;&gt;passwd&lt;/code&gt;进行修改的（推荐）。&lt;/p&gt;
+
+&lt;h3 id=&quot;shadowsocks-server&quot;&gt;2.2 安装Shadowsocks Server&lt;/h3&gt;
+
+&lt;p&gt;在KiwiVM控制面板列表的最后一项可以找到，在知道Github上SS源码被撤下后发现它提供一键安装简直不要太方便。安装完成后，SS Server运行的端口、加密方式和密码都会简单直白地告诉你。&lt;/p&gt;
+
+&lt;p&gt;然后下面就已经给出了后续要做的事情了，建议按他的步骤下载相应的客户端进行配置和测试，如果成功，继续下一步进行我们的提速方案。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796111155315.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;kcptun-1&quot;&gt;2.3 kcptun的使用&lt;/h3&gt;
+
+&lt;p&gt;kcptun的源码托管在：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://github.com/xtaci/kcptun&quot;&gt;xtaci/kcptun: A Simple UDP Tunnel Based On KCP&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;但是实际上有人做了一个一键安装脚本：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://github.com/kuoruan/kcptun_installer&quot;&gt;kuoruan/kcptun_installer: kcptun一键安装脚本&lt;/a&gt;&lt;/p&gt;
+
+  &lt;p&gt;&lt;a href=&quot;https://blog.kuoruan.com/110.html&quot;&gt;kcptun服务端一键安装脚本,喜闻乐见的多用户支持&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;要做的就是使用VPS的Shell，&lt;code class=&quot;highlighter-rouge&quot;&gt;git clone&lt;/code&gt;下这个repository，在目录下运行：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./kcptun.sh update
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;接下来就是按照提示输入参数即可，要注意SS的端口不要输错了，不明白的参数均保持默认即可，不用记住他们，因为最后一个界面都罗列出来了，要将这些内容保存下来，后面配置客户端会用到：
+&lt;img src=&quot;/images/posts/14796121924338.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;2.4 客户端配置&lt;/h3&gt;
+
+&lt;h4 id=&quot;macos&quot;&gt;2.4.1 客户端（macOS）&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;第一步是下载并运行kcptun的客户端&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;下载下来客户端程序，放置在你喜欢的、不会变动的位置，注意版本号尽量和服务器端保持一致吧：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796123234236.jpg&quot; alt=&quot;&quot; /&gt;
+在此目录下新建一个文件，如&lt;code class=&quot;highlighter-rouge&quot;&gt;client.conf&lt;/code&gt;，将上一步最后的推荐客户端配置写入这个文件（一个JSON）。&lt;/p&gt;
+
+&lt;p&gt;运行以下命令，我们要让它在后台一直运行：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;nohup ./client_darwin_amd64 -c ./client.conf 1&amp;gt;&amp;gt; today.out 2&amp;gt;&amp;gt; today.err &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这样整个梯子应该就全部搭好了。后续就是一些配置操作。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;第二步是配置Shadowsocks客户端&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果之前有测试过SS Server是否配置成功，你应该已经安装了相应的Shadowsocks客户端。类似这样：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796127457288.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中被色块覆盖掉得地方是你的VPS远程地址。&lt;/p&gt;
+
+&lt;p&gt;而启用kcptun后，我们需要使用的是本机地址和配置文件中配置的本机端口（其中&lt;code class=&quot;highlighter-rouge&quot;&gt;localattr&lt;/code&gt;的值）：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796129838853.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;大功告成。剩下的是开启：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796172679626.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;实际上，可以通过macOS的网络配置界面发现，自动代理模式采用的是PAC，并且这个PAC文件可以提供了一键更新；全局模式则是直接采用的SOCKS代理。这样，如果只是需要在特定软件中实现代理，就只要填写相应的参数就行了，比如Chrome的话，使用SwitchyOmega等插件。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;2.4.2 客户端（终端）&lt;/h4&gt;
+
+&lt;p&gt;即便是在系统的网络设置中配置了代理，可是在终端中依然不能实现，可有时候用终端装个什么东西（比如&lt;code class=&quot;highlighter-rouge&quot;&gt;gem install&lt;/code&gt;）也是隔着墙的。目前我找到的解决方案是使用tsocks。这里有使用homebrew在macOS上进行安装和使用的方法：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;http://blog.aizhet.com/Apple/17446.html&quot;&gt;mac osx使用homebrew安装tsocks-爱折腾技术网&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;（不过最后&lt;code class=&quot;highlighter-rouge&quot;&gt;tsocks wget https://google.com&lt;/code&gt;还是会失败的，应该是这个请求不允许非浏览器访问吧。）&lt;/p&gt;
+
+&lt;h4 id=&quot;android&quot;&gt;2.4.3 客户端（Android）&lt;/h4&gt;
+
+&lt;p&gt;在搞定桌面平台的配置后，安卓上的配置就显得简单了。只需要在Google Play上下载Shadowsocks的客户端，进行类似的配置即可。并且，安卓客户端上自带了对kcptun的支持，只需要填入之前配置kcptun服务器端最后提供给你的手机端用的参数即可。&lt;/p&gt;
+
+&lt;p&gt;并且，安卓端上可以控制对哪些应用使用代理。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/14796222521508.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Sat, 19 Nov 2016 00:00:00 +0800</pubDate>
+        <link>http://iFanze.cn//2016/11/%E4%BD%BF%E7%94%A8VPS-Shadowsocks-Kcptun%E6%90%AD%E6%A2%AF%E5%AD%90/</link>
+        <guid isPermaLink="true">http://iFanze.cn//2016/11/%E4%BD%BF%E7%94%A8VPS-Shadowsocks-Kcptun%E6%90%AD%E6%A2%AF%E5%AD%90/</guid>
+        
+        
+      </item>
     
       <item>
         <title>Laravel v5.2 框架学习笔记（四）：数据库</title>
@@ -3610,241 +3804,6 @@ POST /seckill/{id}/{md5}/execution &amp;gt; 执行秒杀&lt;/p&gt;
         <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E9%82%A3%E4%BA%9B%E4%BA%8B/</guid>
         
         <category>数据库</category>
-        
-        
-        <category>笔记</category>
-        
-        <category>@慕课网</category>
-        
-      </item>
-    
-      <item>
-        <title>【慕课网】Java高并发秒杀API（二）：Service层</title>
-        <description>&lt;p&gt;注：续前文。&lt;/p&gt;
-
-&lt;p&gt;DAO层不写逻辑代码，主要内容：接口设计 + SQL编写。代码和SQL分离，方便Review。&lt;/p&gt;
-
-&lt;p&gt;DAO拼接等逻辑在Service层完成。&lt;/p&gt;
-
-&lt;h2 id=&quot;service&quot;&gt;Service接口设计&lt;/h2&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;目录：&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;main
---resources
-    --mapper
-        SeckillDao.xml
-        SuccessKilledDao.xml
-    --spring
-        spring-dao.xml
-        spring-service.xml
-    mybatis-config.xml
---webapp
---java
-    --org.seckill
-        --dao
-        --entity
-        --service
-            --impl
-                SeckillServiceImpl
-            SeckillService
-        --exception
-        --dto           数据传输层
-        --enums
-            SeckillStateEnum
---sql
-
-test
---java
---resources
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;设计业务接口：要站在“使用者”角度设计接口，而不是实现。包括三个方面：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;方法定义粒度&lt;/li&gt;
-  &lt;li&gt;参数&lt;/li&gt;
-  &lt;li&gt;返回类型（return 类型/异常）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;section-1&quot;&gt;编码：&lt;/h3&gt;
-
-&lt;p&gt;DTO：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exposer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exposed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//是否开启秒杀&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillExecution&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stateInfo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;SuccessKilled&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;successKilled&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Exception:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// 重复秒杀异常（运行期异常）&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;RepeatKillException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 秒杀关闭异常&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillCloseException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 秒杀相关业务异常（通用异常）&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillException&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RuntimeException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;//IDE自动生成&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Service:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckilService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getSeckillList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getById&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Exposer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exportSeckillUrl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;SeckillExecution&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executeSeckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userPhone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RepeatKillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillCloseException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;实现Service：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SeckillServiceImpl&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Logger&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LoggerFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getLogger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillDao&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillDao&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SuccessKilledDao&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;successKilledDao&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;salt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;rgafghasdjfas;dfjads;fj&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//盐值，混淆MD5。&lt;/span&gt;
-    
-    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getSeckillList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
-    
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    
-    &lt;span class=&quot;n&quot;&gt;Seckill&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getById&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
-    
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    
-    &lt;span class=&quot;n&quot;&gt;Exposer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exportSeckillUrl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;//拿到Seckill对象&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;//比较nowTime是否在startTime和endTime之间。返回相应的 new Exposer()。&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    
-    &lt;span class=&quot;c1&quot;&gt;// 多看看这个函数的实现，很有用！！(放在本文的最后了。)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;SeckillExecution&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executeSeckill&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;seckillId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userPhone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;md5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RepeatKillException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SeckillCloseException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;//判断md5是否存在和是否被篡改&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;//执行秒杀逻辑：减库存、记录购买行为。抛出异常或者返回new SeckillExecution()。注意这里的try...catch和throw异常的使用。&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;可以把状态（数据字典）封装成枚举：SeckillStatEnum，尽量遵循枚举的开发规范。&lt;/p&gt;
-
-&lt;h2 id=&quot;springservice&quot;&gt;使用Spring托管Service依赖理论&lt;/h2&gt;
-
-&lt;p&gt;Spring IOC：依赖注入。对对象工厂和依赖管理可以获得一致的访问接口。&lt;/p&gt;
-
-&lt;p&gt;业务对象依赖图：
-&lt;img src=&quot;/images/posts/14638488325375.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;为什么用IOC：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;对象创建统一管理&lt;/li&gt;
-  &lt;li&gt;规范的生命周期管理&lt;/li&gt;
-  &lt;li&gt;灵活的依赖注入&lt;/li&gt;
-  &lt;li&gt;一致的获取对象&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Spring IOC注入方式和场景：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;XML：来自第三方类库，需要命名空间配置&lt;/li&gt;
-  &lt;li&gt;注解：项目中自身开发使用的类，如@Service、@Controller&lt;/li&gt;
-  &lt;li&gt;Java配置类：通过代码控制对象创建逻辑，如自定义修改依赖类库&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;本项目IOC使用：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;XML配置&lt;/li&gt;
-  &lt;li&gt;package-scan（包扫描）&lt;/li&gt;
-  &lt;li&gt;Annotation注解&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;编码&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;创建spring-service.xml：扫描service包下所有使用注解的类型&lt;/li&gt;
-  &lt;li&gt;对SeckillServiceImpl使用@Service注解，注入Service依赖（对成员变量使用@Autowired）。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;扩展：@Component、@Service、@Dao、@Controller。@Autowired、@Resource、@Inject。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;spring&quot;&gt;使用Spring声明式事务理论&lt;/h3&gt;
-
-&lt;p&gt;声明式事务：解脱事务代码，交给第三方框架。&lt;/p&gt;
-
-&lt;p&gt;使用方式：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;早期：ProxyFactoryBean + XML。&lt;/li&gt;
-  &lt;li&gt;tx:advice + aop命名空间：一次配置永久生效。（使用较多）&lt;/li&gt;
-  &lt;li&gt;注解@Transactional：注解控制。（更推荐）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;使用注解控制事务方法的优点：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;开发团队达成一致约定，明确标注事务方法的编程风格&lt;/li&gt;
-  &lt;li&gt;保证事务方法的执行时间尽可能短，不要穿插其它网络操作（RPC/HTTP请求）或者剥离到事务方法外部。&lt;/li&gt;
-  &lt;li&gt;不是所有的方法都需要事务，如只有一条修改操作，只读操作不需要事务控制。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;事务方法嵌套：声明式事务独有的概念，当有新的事务到来时：propagation_required等。&lt;/p&gt;
-
-&lt;p&gt;什么时候回滚事务：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;抛出运行期异常（RuntimeException）&lt;/li&gt;
-  &lt;li&gt;要小心不当的try-catch。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;具体配置：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;配置事务管理器（jdbc）：注入数据库连接池&lt;/li&gt;
-  &lt;li&gt;配置基于注解的声明式事务，默认使用注解来管理事务行为&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;service-1&quot;&gt;使用集成测试Service逻辑&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;使用Logback记录日志。&lt;/li&gt;
-  &lt;li&gt;注意异常情况的处理。&lt;/li&gt;
-&lt;/ul&gt;
-
-</description>
-        <pubDate>Sat, 21 May 2016 23:05:40 +0800</pubDate>
-        <link>http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%BA%8C-Service%E5%B1%82/</link>
-        <guid isPermaLink="true">http://iFanze.cn//2016/05/%E6%85%95%E8%AF%BE%E7%BD%91-Java%E9%AB%98%E5%B9%B6%E5%8F%91%E7%A7%92%E6%9D%80API-%E4%BA%8C-Service%E5%B1%82/</guid>
-        
-        <category>Java</category>
-        
-        <category>Web后台</category>
         
         
         <category>笔记</category>
